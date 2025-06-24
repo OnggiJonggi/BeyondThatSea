@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="videoCallMapper">
+	
+	<insert id="createRoom" parameterType="VideoCall">
+	    <selectKey keyProperty="vcNo" resultType="int" order="BEFORE">
+	        SELECT seq_vc.nextval FROM dual
+	    </selectKey>
+	    <selectKey keyProperty="createTimestamp" resultType="TIMESTAMP" order="BEFORE">
+	        SELECT SYSDATE FROM dual
+	    </selectKey>
+		insert into VIDEO_CALL(
+			VC_NO
+			,USER_NO
+			,VC_ID
+			,VC_SESSION
+			,VC_NAME
+			,CREATE_TIMESTAMP
+			,MAX_PARTICIPANTS
+			,STATUS
+			)
+		values(
+			#{vcNo}
+			,#{userNo}
+			,#{vcId}
+			,#{vcSession}
+			,#{vcName}
+			,#{createTimestamp}
+			,#{maxParticipants}
+			,'Y'
+			)
+	</insert>
+	
+	<select id="countMyVcRoom" parameterType="Member" resultType="int">
+		select count(*)
+		from VIDEO_CALL
+		where USER_NO = #{userNo} 
+	</select>
+	
+	<select id="myRoomList" parameterType="Member"  resultType="VideoCall">
+		select vc.*
+			,#{userName} as user_name
+	        ,#{nameSeed} as name_seed
+		from (
+			select VC_NO, USER_NO, VC_ID, VC_SESSION, VC_NAME, CREATE_TIMESTAMP
+				,MAX_PARTICIPANTS ,STATUS
+			from VIDEO_CALL
+			where USER_NO = #{userNo}
+			order by (CASE WHEN STATUS = 'Y' THEN 1 ELSE 0 END) DESC
+				,CREATE_TIMESTAMP DESC
+			) vc
+	</select>
+	
+	<insert id="insertParticipate" parameterType="VcMember">
+		insert into VC_MEMBER(VC_NO,USER_NO,STATUS,ROLE_TYPE)
+		values(#{vcNo},#{userNo},#{status},#{roleType})
+	</insert>
+	
+	<select id="haveLicense" parameterType="Member" resultType="string">
+		select ROLE_TYPE
+		from VC_MEMBER
+		where user_no = (select user_no
+							from member
+							where user_name = #{userName}
+							and name_seed = #{nameSeed})
+	</select>
+</mapper>
