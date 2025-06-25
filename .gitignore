@@ -113,6 +113,6 @@ $RECYCLE.BIN/
 *.lnk
 
 #perplexity 설정 파일 추적하지 마!
-/resource/config/perplexity.xml
+src/main/resources/config/perplexity.xml
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,maven,eclipse
