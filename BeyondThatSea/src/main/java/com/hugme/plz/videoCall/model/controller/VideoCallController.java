@@ -28,9 +28,15 @@ public class VideoCallController {
 	@GetMapping("videoCall/vcMain")
 	public String goVideoCallMain(HttpSession session, Model model) {
 		try {
-			int result = service.countMyVcRoom(session);
-			model.addAttribute("countMyVcRoom",result);
-			return "videoCall/vcMain";
+			//자신의 방 조회
+			List<VideoCall> list = new ArrayList<>();
+			list = service.myRoomList(session);
+			
+			if(list==null) {
+				throw new Exception();
+			}else {
+				return "videoCall/vcMain";
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			session.setAttribute("alertMsg", "500 err");
@@ -44,7 +50,7 @@ public class VideoCallController {
 		try {
 			int result = service.createRoom(session,vc);
 			if(result>0) {
-				return "videoCall/room";
+				return "redirect:/videoCall/room";
 			}else {
 				throw new Exception();
 			}
@@ -55,34 +61,13 @@ public class VideoCallController {
 		} 
 	}
 	
-	//비동기 - 자신의 방 목록 보여주기
-	@ResponseBody
-	@PostMapping("videoCall/myRoomList")
-	public String myRoomList(HttpSession session) {
-		try {
-			List<VideoCall> list = new ArrayList<>();
-			list = service.myRoomList(session);
-			
-			if(list==null) {
-				throw new Exception();
-			}else {
-				return "videoCall/room";
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			session.setAttribute("alertMsg", "500 err");
-			return "common/errorPage";
-		}
-	}
-	
-	
-	//기존 방 불러오기
-	@GetMapping("videoCall/recallRoom")
+	//기존 자신의 방 활성화
+	@PostMapping("videoCall/recallRoom")
 	public String recallRoom(HttpSession session, VideoCall vc) {
 		try {
 			int result = service.recallRoom(session, vc);
 			if(result>0) {
-				return "videoCall/room";
+				return "redirect:/videoCall/room";
 			}else {
 				throw new Exception();
 			}
@@ -93,9 +78,9 @@ public class VideoCallController {
 		}
 	}
 	
-	//방 참여하기
+	//비동기 - 방 참여하기
 	@ResponseBody
-	@PostMapping("videoCall/participate/${sessionId}")
+	@PostMapping("videoCall/participate/{sessionId}")
 	public Map<String, Object> createToken(@PathVariable String sessionId
 			,HttpSession session) {
 		Map<String, Object> result = null;

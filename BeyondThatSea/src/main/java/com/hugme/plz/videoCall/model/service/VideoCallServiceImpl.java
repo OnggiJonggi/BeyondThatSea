@@ -1,5 +1,6 @@
 package com.hugme.plz.videoCall.model.service;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,11 +38,23 @@ public class VideoCallServiceImpl implements VideoCallService{
 	@Autowired
 	private VideoCallDao dao;
 	
-	//이미 자신이 몇 개의 방을 생성했는지 확인
+	
+	//페이지 접근시 자신의 방 리스트를 보여준다.
 	@Override
-	public int countMyVcRoom(HttpSession session) {
+	public List<VideoCall> myRoomList(HttpSession session) {
 		Member m = (Member)session.getAttribute("loginUser");
-		return dao.countMyVcRoom(sqlSession,m);
+		List<VideoCall> list = dao.myRoomList(sqlSession, m);
+		
+		//방 리스트에 이름/시드 넣기
+		for(VideoCall vc : list) {
+			vc.setUserName(m.getUserName());
+			vc.setNameSeed(m.getNameSeed());
+		}
+		
+		//세션에 퐁당
+		session.setAttribute("myVcRoom", list);
+		
+		return list;
 	}
 	
 	
@@ -68,11 +81,10 @@ public class VideoCallServiceImpl implements VideoCallService{
 		String sessionId = vcSession.getSessionId();
 		vc.setVcSession(sessionId);
 		
-		//db에 저장하지 않는 프론트용 데이터
+		//데이터 모음집 넣기
 		vc.setCurrParticipants(1);
 		vc.setUserName(m.getUserName());
 		vc.setNameSeed(m.getNameSeed());
-		
 		
 		//db에 방 생성하고 참여자 목록에 추가
 		int result = dao.createRoom(sqlSession,vc);
@@ -87,12 +99,50 @@ public class VideoCallServiceImpl implements VideoCallService{
 		return result;
 	}
 	
-	//자신의 방 리스트를 보여준다.
+	//기존 자신의 방 활성화
+	@Transactional
 	@Override
-	public List<VideoCall> myRoomList(HttpSession session) {
+	public int recallRoom(HttpSession session, VideoCall vc) throws Exception{
+		
 		Member m = (Member)session.getAttribute("loginUser");
-		List<VideoCall> list = dao.myRoomList(sqlSession, m);
-		return list;
+		
+		//먼저 유효성 확인 - 해당하는 방이 존재하는지 함 봅시다.
+		List<VideoCall> list = (List<VideoCall>)session.getAttribute("myVcRoom");
+		if(list==null || list.isEmpty()) return 0;
+		boolean flag = false;
+		for(VideoCall vcFor : list) {
+			//vcId와 createTimestamp로 방에 들어갈 거에요.
+			if(Arrays.equals(vcFor.getVcId(), vc.getVcId())
+					|| vcFor.getCreateTimestamp().equals(vc.getCreateTimestamp())) {
+				vc = vcFor;
+				flag = true;
+				break;
+			}
+		}
+		if(!flag) return 0;
+
+		//openvidu세션 생성
+		SessionProperties properties = new SessionProperties.Builder().build();
+		Session vcSession = openvidu.createSession(properties);
+		String sessionId = vcSession.getSessionId();
+		vc.setVcSession(sessionId);
+		
+		//db에 저장하지 않는 프론트용 데이터
+		vc.setCurrParticipants(1);
+		vc.setUserName(m.getUserName());
+		vc.setNameSeed(m.getNameSeed());
+		
+		//db에 방 세션 갱신하고 참여자 목록 갱신
+		int result = dao.updateRoom(sqlSession,vc);
+		if(result>0) {
+			VcMember vcm = new VcMember(vc.getVcNo(),m.getUserNo(),"Y","M");
+			result = dao.updateParticipate(sqlSession,vcm);
+			
+			//세션에 해당 방 정보 저장
+			session.setAttribute("videoCallRoom", vc);
+		}
+		
+		return result;
 	}
 	
 	//openvidu토큰 생성
@@ -110,7 +160,6 @@ public class VideoCallServiceImpl implements VideoCallService{
         //여기 들어올 자격이 있는가?
         Member m = (Member)session.getAttribute("loginUser");
         String license = dao.haveLicense(sqlSession,m);
-        OpenViduRole role;
         
         //아니 이 새끼 DB에 없잖아. 너 잘 걸렸다 심심했는데
         if(license==null) {
@@ -119,6 +168,7 @@ public class VideoCallServiceImpl implements VideoCallService{
         }
         
         //roleType에 따른 openvidu권한 설정
+        OpenViduRole role;
         switch(license) {
         case "M": role = OpenViduRole.MODERATOR; break;
         case "P": role = OpenViduRole.PUBLISHER; break;

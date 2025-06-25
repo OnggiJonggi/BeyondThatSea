@@ -112,7 +112,4 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-#perplexity 설정 파일 추적하지 마!
-src/main/resources/config/perplexity.xml
-
 # End of https://www.toptal.com/developers/gitignore/api/windows,maven,eclipse

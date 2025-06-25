@@ -8,6 +8,12 @@
 </head>
 <body>
 	<%@include file="/WEB-INF/views/common/header.jsp" %>
+	
+	<h3>니가 받은 초대</h3>
+	<div id="invitedRoom">
+	<button type="button">새로고침</button>
+	<!-- 초대받음 : session의 invitedRoom에 VideoCall객체를 받아오기 -->
+	</div>
 
 	<h3>새로운 방 생성</h3>
 	<form id="createRoomForm" action="${pageScope.root}/videoCall/createRoom" method="post">
@@ -31,8 +37,11 @@
 	
 	<hr>
 	
-	기존 방 참여하기
-	<!-- 비동기식으로 자신의 방 리스트 불러오기 -->
+	<h3>기존 방 활성화</h3>
+	<!--
+	session의 myVcRoom에 List<VideoCall>로 담김
+	myVcRoom.createTimestamp과 myVcRoom.vcId를 videoCall/recallRoom로 보냄
+	-->
 	
 	
 	<script type="text/javascript">

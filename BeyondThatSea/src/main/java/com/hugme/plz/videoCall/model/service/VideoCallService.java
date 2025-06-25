@@ -9,17 +9,17 @@ import jakarta.servlet.http.HttpSession;
 
 public interface VideoCallService {
 	
-	//이미 자신이 몇 개의 방을 생성했는지 확인
-	int countMyVcRoom(HttpSession session);
-	
-	//새로운 방 생성
-	int createRoom(HttpSession session, VideoCall vc) throws Exception;
-
 	//자신의 방 리스트 조회
 	List<VideoCall> myRoomList(HttpSession session);
 	
+	//새로운 방 생성
+	int createRoom(HttpSession session, VideoCall vc) throws Exception;
+	
 	//openvidu 토큰 생성
 	Map<String, Object> createToken(HttpSession session, String sessionId) throws Exception;
+
+	//기존 자신의 방 활성화
+	int recallRoom(HttpSession session, VideoCall vc) throws Exception;
 
 
 

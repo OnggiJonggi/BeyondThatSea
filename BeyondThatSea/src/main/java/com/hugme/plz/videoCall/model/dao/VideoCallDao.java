@@ -27,8 +27,17 @@ public class VideoCallDao {
 		return sqlSession.insert("videoCallMapper.insertParticipate",vcm);
 	}
 
+	public int updateParticipate(SqlSessionTemplate sqlSession, VcMember vcm) {
+		return sqlSession.update("videoCallMapper.updateParticipate",vcm);
+	}
+	
 	public String haveLicense(SqlSessionTemplate sqlSession, Member m) {
 		return sqlSession.selectOne("videoCallMapper.haveLicense",m);
 	}
+
+	public int updateRoom(SqlSessionTemplate sqlSession, VideoCall vc) {
+		return sqlSession.update("videoCallMapper.updateRoom",vc);
+	}
+
 
 }

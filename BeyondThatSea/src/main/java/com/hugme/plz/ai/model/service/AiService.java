@@ -26,9 +26,9 @@ public class AiService {
 	private Properties prop = new Properties();
 	public AiService() {
 		try {
-			ClassPathResource resource = new ClassPathResource("config/perplexity.xml");
+			ClassPathResource resource = new ClassPathResource("config/perplexity-config.properties");
 			InputStream inputStream = resource.getInputStream();
-			prop.loadFromXML(inputStream);
+			prop.load(inputStream);
 			inputStream.close();
 		} catch (Exception e) {
 			e.printStackTrace();
