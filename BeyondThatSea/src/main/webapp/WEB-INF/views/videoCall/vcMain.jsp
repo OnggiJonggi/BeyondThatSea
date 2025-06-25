@@ -43,11 +43,22 @@
 	<h3>기존 방 활성화</h3>
 	<!--
 	session의 myVcRoom에 List<VideoCall>로 담김
-	myVcRoom.createTimestamp과 myVcRoom.vcId를 videoCall/recallRoom로 보냄
+	myVcRoom.vcId를 videoCall/recallRoom로 보냄
 	-->
 	
 	
+	<h3>다른 방 참여하기</h3>
+	<div id="invitedRoom">
+		<form action="${root}/videoCall/goInvitedRoom" method="POST">
+			vcId : <input type="text" name="roomHref"> <br>
+		</form>
+	</div>
+	
+	
 	<script type="text/javascript">
+	
+	//------------------------새로운 방 생성-----------------------
+	
 	//모든 검증이 true여야 sumbmit버튼 활성화됨
 	let vcNamePass = false;
 	let mpPass = false;
@@ -121,6 +132,9 @@
 	            break;
 	    }
 	}
+	
+	//------------------------초대받은 방 참여-------------------
+	
 	</script>
 </body>
 </html>

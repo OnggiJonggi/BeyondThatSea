@@ -31,14 +31,12 @@ public class VideoCallController {
 	public String goVideoCallMain(HttpSession session, Model model) {
 		try {
 			//자신의 방 조회
-			List<VideoCall> list = new ArrayList<>();
-			list = service.myRoomList(session);
+			service.myRoomList(session);
 			
-			if(list==null) {
-				throw new Exception();
-			}else {
-				return "videoCall/vcMain";
-			}
+			//초대받고 수락 대기중인 방 조회
+			service.myInvitedRoomList(session);
+			
+			return "videoCall/vcMain";
 		} catch (Exception e) {
 			e.printStackTrace();
 			session.setAttribute("alertMsg", "500 err");
@@ -68,6 +66,23 @@ public class VideoCallController {
 	public String recallRoom(HttpSession session, VideoCall vc) {
 		try {
 			int result = service.recallRoom(session, vc);
+			if(result>0) {
+				return "redirect:/videoCall/room";
+			}else {
+				throw new Exception();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			session.setAttribute("alertMsg", "500 err");
+			return "common/errorPage";
+		}
+	}
+	
+	//초대받은 방 들어가기
+	@PostMapping("/goInvitedRoom")
+	public String goInvitedRoom(HttpSession session, String roomHref) {
+		try {
+			int result = service.goInvitedRoom(session, roomHref);
 			if(result>0) {
 				return "redirect:/videoCall/room";
 			}else {

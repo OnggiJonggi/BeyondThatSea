@@ -3,12 +3,14 @@ package com.hugme.plz.videoCall.model.vo;
 import java.sql.Timestamp;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Builder
 public class VideoCall {
 	private String vcNo;
 	private String userNo; //방장 회원번호

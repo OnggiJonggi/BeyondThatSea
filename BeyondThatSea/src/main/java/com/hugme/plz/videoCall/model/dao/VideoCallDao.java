@@ -14,7 +14,7 @@ public class VideoCallDao {
 	public int createRoom(SqlSessionTemplate sqlSession, VideoCall vc) {
 		return sqlSession.insert("videoCallMapper.createRoom",vc);
 	}
-	
+
 	public int countMyVcRoom(SqlSessionTemplate sqlSession, Member m) {
 		return sqlSession.selectOne("videoCallMapper.countMyVcRoomList",m);
 	}
@@ -23,6 +23,10 @@ public class VideoCallDao {
 		return sqlSession.selectList("videoCallMapper.myRoomList",m);
 	}
 
+	public List<VideoCall> myInvitedRoomList(SqlSessionTemplate sqlSession, Member m) {
+		return sqlSession.selectList("videoCallMapper.myInvitedRoomList",m);
+	}
+	
 	public int insertParticipate(SqlSessionTemplate sqlSession, VcMember vcm) {
 		return sqlSession.insert("videoCallMapper.insertParticipate",vcm);
 	}
@@ -31,13 +35,22 @@ public class VideoCallDao {
 		return sqlSession.update("videoCallMapper.updateParticipate",vcm);
 	}
 	
-	public String haveLicense(SqlSessionTemplate sqlSession, Member m) {
-		return sqlSession.selectOne("videoCallMapper.haveLicense",m);
+	public String haveLicense(SqlSessionTemplate sqlSession, VcMember vcm) {
+		return sqlSession.selectOne("videoCallMapper.haveLicense",vcm);
 	}
 
 	public int updateRoom(SqlSessionTemplate sqlSession, VideoCall vc) {
 		return sqlSession.update("videoCallMapper.updateRoom",vc);
 	}
+
+	public int goInvitedRoom(SqlSessionTemplate sqlSession, VcMember vcm) {
+		return sqlSession.update("videoCallMapper.goInvitedRoom",vcm);
+	}
+
+	public VideoCall selectRoom(SqlSessionTemplate sqlSession, VideoCall vc) {
+		return sqlSession.selectOne("videoCallMapper.selectRoom",vc);
+	}
+
 
 
 }

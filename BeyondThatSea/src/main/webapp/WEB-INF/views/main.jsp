@@ -18,7 +18,7 @@ pageEncoding="UTF-8"%>
   
     <hr>
     perplexity 써먹기
-    <form action="${root}/search.ai" method="post">
+    <form action="${root}/ai/search" method="post">
       입력해요 : <input type="text" name="content" required/> <br />
       <button type="submit">DORO!!</button>
     </form>

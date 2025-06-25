@@ -10,11 +10,12 @@ import com.hugme.plz.ai.model.service.AiService;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
+@RequestMapping("/ai")
 public class AiController {
 	@Autowired
 	private AiService aiService;
 	
-	@RequestMapping(value="search.ai", method=RequestMethod.POST)
+	@RequestMapping(value="/search", method=RequestMethod.POST)
 	public String search(HttpSession session, String content) {
 		try {
 			String result = aiService.perplexityService(content);

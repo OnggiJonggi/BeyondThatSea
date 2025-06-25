@@ -1,5 +1,7 @@
 package com.hugme.plz.videoCall.model.service;
 
+import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +43,7 @@ public class VideoCallServiceImpl implements VideoCallService{
 	
 	//페이지 접근시 자신의 방 리스트를 보여준다.
 	@Override
-	public List<VideoCall> myRoomList(HttpSession session) {
+	public void myRoomList(HttpSession session) {
 		Member m = (Member)session.getAttribute("loginUser");
 		List<VideoCall> list = dao.myRoomList(sqlSession, m);
 		
@@ -53,10 +55,17 @@ public class VideoCallServiceImpl implements VideoCallService{
 		
 		//세션에 퐁당
 		session.setAttribute("myVcRoom", list);
-		
-		return list;
 	}
 	
+	//초대받고 수락 대기중인 방 조회
+	@Override
+	public void myInvitedRoomList(HttpSession session) {
+		Member m = (Member)session.getAttribute("loginUser");
+		List<VideoCall> list = dao.myInvitedRoomList(sqlSession, m);
+		
+		//세션에 퐁당
+		session.setAttribute("invitedRoom", list);
+	}
 	
 	//새로운 방 생성
 	@Override
@@ -89,7 +98,12 @@ public class VideoCallServiceImpl implements VideoCallService{
 		//db에 방 생성하고 참여자 목록에 추가
 		int result = dao.createRoom(sqlSession,vc);
 		if(result>0) {
-			VcMember vcm = new VcMember(vc.getVcNo(),m.getUserNo(),"Y","M");
+			VcMember vcm = VcMember.builder()
+					.vcNo(vc.getVcNo())
+					.userNo(m.getUserNo())
+					.status("Y")
+					.roleType("M")
+					.build();
 			result = dao.insertParticipate(sqlSession,vcm);
 			
 			//세션에 해당 방 정보 저장
@@ -135,12 +149,49 @@ public class VideoCallServiceImpl implements VideoCallService{
 		//db에 방 세션 갱신하고 참여자 목록 갱신
 		int result = dao.updateRoom(sqlSession,vc);
 		if(result>0) {
-			VcMember vcm = new VcMember(vc.getVcNo(),m.getUserNo(),"Y","M");
+			VcMember vcm = VcMember.builder()
+					.vcNo(vc.getVcNo())
+					.userNo(m.getUserNo())
+					.status("Y")
+					.roleType("M")
+					.build();
 			result = dao.updateParticipate(sqlSession,vcm);
 			
 			//세션에 해당 방 정보 저장
 			session.setAttribute("videoCallRoom", vc);
 		}
+		
+		return result;
+	}
+	
+	//초대받은 방 들어가기
+	@Override
+	public int goInvitedRoom(HttpSession session, String roomHref) throws Exception {
+		int result = 1;
+		Member m = (Member)session.getAttribute("loginUser");
+		
+		//roomHref를 vcId로 만들기
+		byte[] vcId = roomHref.getBytes(StandardCharsets.UTF_8);
+		
+		//이놈 이거 접근 권한 진짜 있어?
+		VcMember vcm = VcMember.builder()
+				.vcId(vcId)
+				.userNo(m.getUserNo())
+				.build();
+        String roleType = dao.haveLicense(sqlSession,vcm);
+        
+        //권한 없으면 가세요라
+        if(roleType==null) return 0;
+        
+        //초대 수락 대기중 / 비접송 상태라면 상태 "Y"로 변경
+        else if(roleType.equals("U") || roleType.equals("N")){
+        	result *= dao.goInvitedRoom(sqlSession, vcm);
+        }
+		
+        //해당 방 조회해서 세션에 넣기
+        VideoCall vc = VideoCall.builder().vcId(vcId).build();
+        vc = dao.selectRoom(sqlSession, vc);
+		session.setAttribute("videoCallRoom", vc);
 		
 		return result;
 	}
@@ -159,17 +210,23 @@ public class VideoCallServiceImpl implements VideoCallService{
         
         //여기 들어올 자격이 있는가?
         Member m = (Member)session.getAttribute("loginUser");
-        String license = dao.haveLicense(sqlSession,m);
+        VideoCall vc = (VideoCall)session.getAttribute("videoCallRoom");
+		VcMember vcm = VcMember.builder()
+				.vcId(vc.getVcId())
+				.userNo(m.getUserNo())
+				.build();
+        String roleType = dao.haveLicense(sqlSession,vcm);
+
         
         //아니 이 새끼 DB에 없잖아. 너 잘 걸렸다 심심했는데
-        if(license==null) {
-            result.put("error", "잘못된 접근입니다.");
-            return result;
-        }
+        if(roleType==null) {
+        	result.put("error", "잘못된 접근입니다.");
+    		return result;
+    	}
         
         //roleType에 따른 openvidu권한 설정
         OpenViduRole role;
-        switch(license) {
+        switch(roleType) {
         case "M": role = OpenViduRole.MODERATOR; break;
         case "P": role = OpenViduRole.PUBLISHER; break;
         case "S":

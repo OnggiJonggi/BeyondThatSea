@@ -40,13 +40,31 @@
 		where USER_NO = #{userNo} 
 	</select>
 	
-	<select id="myRoomList" parameterType="Member"  resultType="VideoCall">
+	<select id="myRoomList" parameterType="Member" resultType="VideoCall">
 		select VC_NO, USER_NO, VC_ID, VC_SESSION, VC_NAME, CREATE_TIMESTAMP
 			,MAX_PARTICIPANTS ,STATUS
 		from VIDEO_CALL
 		where USER_NO = #{userNo}
 		order by (CASE WHEN STATUS = 'Y' THEN 1 ELSE 0 END) DESC
 			,CREATE_TIMESTAMP DESC
+	</select>
+	
+	<select id="myInvitedRoomList" parameterType="Member" resultType="VideoCall">
+		select vc.VC_NO
+			,vc.USER_NO
+			,vc.VC_ID
+			,vc.VC_SESSION
+			,vc.VC_NAME
+			,vc.CREATE_TIMESTAMP
+			,vc.MAX_PARTICIPANTS
+			,vc.STATUS
+			,m.userName
+			,m.nameSeed
+		from VIDEO_CALL vc
+		left join MEMBER m on(vc.USER_NO = m.USER_NO)
+		left join VC_MEMBER vcm on(vc.VC_NO = vcm.VC_NO)
+		where vcm.USER_NO = #{userNo}
+		and vcm.status = "U"
 	</select>
 	
 	<insert id="insertParticipate" parameterType="VcMember">
@@ -62,16 +80,15 @@
 		and USER_NO = #{userNo}
 	</update>
 	
-	<select id="haveLicense" parameterType="Member" resultType="string">
+	<select id="haveLicense" parameterType="VcMember" resultType="string">
 		select ROLE_TYPE
 		from VC_MEMBER
-		where user_no = (select user_no
-							from member
-							where user_name = #{userName}
-							and name_seed = #{nameSeed})
+		left join on (VC_MEMBER.VC_no = VIDIEO_CALL.VC_NO)
+		where VC_MEMBER.USER_NO = #{userNo}
+		and VC_MEMBER.VC_ID = #{vcId}
 	</select>
 	
-	<update id="updateRoom" parameterType="VcMember">
+	<update id="updateRoom" parameterType="VideoCall">
 		update VC_MEMBER
 		set VC_SESSION = #{vcSession}
 			,VC_NAME = #{vcName}
@@ -79,6 +96,20 @@
 			,STATUS = #{status}
 		where VC_NO = #{vcNo}
 	</update>
+	
+	<update id="goInvitedRoom" parameterType="VcMember">
+		update VC_MEMBER
+		set STATUS = "Y"
+		where USER_NO = #{userNo}
+		and VC_ID = #{vcId}
+	</update>
+	
+	<select id="selectRoom" parameterType="VideoCall">
+		select VC_NO, USER_NO, VC_ID, VC_SESSION, VC_NAME, CREATE_TIMESTAMP
+			,MAX_PARTICIPANTS ,STATUS
+		from VIDEO_CALL
+		where USER_NO = #{userNo} 
+	</select>
 	
 	
 </mapper>
