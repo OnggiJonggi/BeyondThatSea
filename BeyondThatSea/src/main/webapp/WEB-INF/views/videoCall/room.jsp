@@ -4,7 +4,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="https://unpkg.com/@openvidu/webcomponents@2.23.0/dist/openvidu-webcomponent/openvidu-webcomponent.js"></script>
+<script src="${pageContext.request.contextPath}/openvidu-webcomponent-2.23.0.js"></script>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/openvidu-webcomponent-2.23.0.css">
 <c:set var="vcRoom" value="${sessionScope.videoCallRoom}"/>
 <meta charset="UTF-8">
 <title>${vcRoom.UserName}님의 방</title>

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class MainController {
 	
 	//메인으로
-	@RequestMapping("aiWeather")
+	@RequestMapping("/")
 	public String goMain() {
 		return"main";
 	}

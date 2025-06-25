@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.hugme.plz.member.model.service.MemberService;
@@ -12,18 +13,19 @@ import com.hugme.plz.member.model.vo.Member;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
+@RequestMapping("/member")
 public class MemberController {
 	@Autowired
 	private MemberService service;
 	
 	//회원가입 페이지로
-	@GetMapping("member/enroll")
+	@GetMapping("/enroll")
 	public String goEnroll() {
 		return ("member/enroll");
 	}
 	
 	//회원가입
-	@PostMapping("member/enroll")
+	@PostMapping("/enroll")
 	public String enroll(HttpSession session, Member m) { 
 		try {
 			int result = service.enroll(m);
@@ -41,7 +43,7 @@ public class MemberController {
 	
 	//비동기 - 아이디 중복확인
 	@ResponseBody
-	@PostMapping("member/checkUserId")
+	@PostMapping("/checkUserId")
 	public String checkUserId(String userId) {
 		try {
 			return service.checkUserId(userId);
@@ -54,7 +56,7 @@ public class MemberController {
 	
 	//로그인
 	@ResponseBody
-	@PostMapping("member/login")
+	@PostMapping("/login")
 	public String login(HttpSession session, Member m){
 		try {
 			m = service.login(m);

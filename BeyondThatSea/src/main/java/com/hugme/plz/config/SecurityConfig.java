@@ -1,4 +1,4 @@
-package com.hugme.plz.common;
+package com.hugme.plz.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

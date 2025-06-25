@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.hugme.plz.videoCall.model.service.VideoCallService;
@@ -20,12 +21,13 @@ import jakarta.servlet.http.HttpSession;
 
 
 @Controller
+@RequestMapping("/videoCall")
 public class VideoCallController {
 	@Autowired
 	private VideoCallService service;
 	
 	//영상통화 메인
-	@GetMapping("videoCall/vcMain")
+	@GetMapping("/vcMain")
 	public String goVideoCallMain(HttpSession session, Model model) {
 		try {
 			//자신의 방 조회
@@ -45,7 +47,7 @@ public class VideoCallController {
 	}
 	
 	//새로운 방 생성
-	@PostMapping("videoCall/createRoom")
+	@PostMapping("/createRoom")
 	public String createRoom(HttpSession session, Model model, VideoCall vc) {
 		try {
 			int result = service.createRoom(session,vc);
@@ -62,7 +64,7 @@ public class VideoCallController {
 	}
 	
 	//기존 자신의 방 활성화
-	@PostMapping("videoCall/recallRoom")
+	@PostMapping("/recallRoom")
 	public String recallRoom(HttpSession session, VideoCall vc) {
 		try {
 			int result = service.recallRoom(session, vc);
@@ -80,7 +82,7 @@ public class VideoCallController {
 	
 	//비동기 - 방 참여하기
 	@ResponseBody
-	@PostMapping("videoCall/participate/{sessionId}")
+	@PostMapping("/participate/{sessionId}")
 	public Map<String, Object> createToken(@PathVariable String sessionId
 			,HttpSession session) {
 		Map<String, Object> result = null;

@@ -12,7 +12,10 @@
 	<h3>니가 받은 초대</h3>
 	<div id="invitedRoom">
 	<button type="button">새로고침</button>
-	<!-- 초대받음 : session의 invitedRoom에 VideoCall객체를 받아오기 -->
+	<!--
+	초대받음 : session의 invitedRoom에 VideoCall객체를 받아오기
+	sse로 실시간?
+	-->
 	</div>
 
 	<h3>새로운 방 생성</h3>
