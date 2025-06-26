@@ -1,8 +1,6 @@
 package com.hugme.plz.videoCall.model.controller;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +90,23 @@ public class VideoCallController {
 			e.printStackTrace();
 			session.setAttribute("alertMsg", "500 err");
 			return "common/errorPage";
+		}
+	}
+	
+	//방 초대하기
+	@ResponseBody
+	@PostMapping("/inviteUser")
+	public String inviteUser(HttpSession session, String userId, String vcIdStr) {
+		try {
+			int result = service.inviteUser(session, userId, vcIdStr);
+			if(result>0) {
+				return "success";
+			}else {
+				return "fail";
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "fail";
 		}
 	}
 	

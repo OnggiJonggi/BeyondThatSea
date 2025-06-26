@@ -59,14 +59,10 @@ public class MemberController {
 	@PostMapping("/login")
 	public String login(HttpSession session, Member m){
 		try {
-			m = service.login(m);
+			int result = service.login(session,m);
 			
-			if(m == null || m.getUserNo()==null) {
-				return "noPass";
-			}
-			
-			session.setAttribute("loginUser", m);
-			return "pass";
+			if(result>0) return "pass";
+			else return "noPass";
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "noPass";

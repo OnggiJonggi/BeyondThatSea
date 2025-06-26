@@ -2,6 +2,8 @@ package com.hugme.plz.member.model.service;
 
 import com.hugme.plz.member.model.vo.Member;
 
+import jakarta.servlet.http.HttpSession;
+
 public interface MemberService {
 
 	//회원가입
@@ -11,7 +13,7 @@ public interface MemberService {
 	String checkUserId(String userId);
 
 	//로그인
-	Member login(Member m);
+	int login(HttpSession session, Member m);
 
 	
 }

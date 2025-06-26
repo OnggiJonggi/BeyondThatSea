@@ -1,6 +1,7 @@
 package com.hugme.plz.videoCall.model.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import com.hugme.plz.member.model.vo.Member;
 import com.hugme.plz.videoCall.model.vo.VcMember;
@@ -27,8 +28,8 @@ public class VideoCallDao {
 		return sqlSession.selectList("videoCallMapper.myInvitedRoomList",m);
 	}
 	
-	public int insertParticipate(SqlSessionTemplate sqlSession, VcMember vcm) {
-		return sqlSession.insert("videoCallMapper.insertParticipate",vcm);
+	public int insertModerator(SqlSessionTemplate sqlSession, VcMember vcm) {
+		return sqlSession.insert("videoCallMapper.insertModerator",vcm);
 	}
 
 	public int updateParticipate(SqlSessionTemplate sqlSession, VcMember vcm) {
@@ -49,6 +50,10 @@ public class VideoCallDao {
 
 	public VideoCall selectRoom(SqlSessionTemplate sqlSession, VideoCall vc) {
 		return sqlSession.selectOne("videoCallMapper.selectRoom",vc);
+	}
+
+	public int insertSubscriber(SqlSessionTemplate sqlSession, Map<String, Object> map) {
+		return sqlSession.insert("videoCallMapper.insertSubscriber", map);
 	}
 
 

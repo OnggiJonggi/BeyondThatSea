@@ -1,8 +1,12 @@
 package com.hugme.plz.member.model.service;
 
 import com.hugme.plz.common.Regexp;
+import com.hugme.plz.config.OpenViduConfig;
 import com.hugme.plz.member.model.dao.MemberDao;
 import com.hugme.plz.member.model.vo.Member;
+import io.openvidu.java.client.OpenVidu;
+import jakarta.servlet.http.HttpSession;
+
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -10,12 +14,21 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class MemberServiceImpl implements MemberService{
+
+    private final OpenViduConfig openViduConfig;
+
+    private final OpenVidu openViduBean;
 	@Autowired
 	private SqlSessionTemplate sqlSession;
 	@Autowired
 	private MemberDao dao;
 	@Autowired
 	private BCryptPasswordEncoder bcrypt;
+
+    MemberServiceImpl(OpenVidu openViduBean, OpenViduConfig openViduConfig) {
+        this.openViduBean = openViduBean;
+        this.openViduConfig = openViduConfig;
+    }
 	
 	//회원가입
 	@Override
@@ -63,17 +76,20 @@ public class MemberServiceImpl implements MemberService{
 	
 	//로그인
 	@Override
-	public Member login(Member m) {
+	public int login(HttpSession session, Member m) {
 		String userId = m.getUserId().trim();
 		String userPwd = m.getUserPwd().trim();
 		
 		if(!userId.matches(Regexp.USERID)
-				|| !userPwd.matches(Regexp.USERPWD)) {
-			return null;
-		}else {
-			m.setUserId(userId);
-			m.setUserPwd(userPwd);
-			return dao.login(sqlSession, m);
-		}
+				|| !userPwd.matches(Regexp.USERPWD)) return 0;
+		m.setUserId(userId);
+		m.setUserPwd(userPwd);
+		
+		Member loginUser = dao.login(sqlSession, m);
+		
+		if(!bcrypt.matches(userPwd, loginUser.getUserPwd())) return 0;
+		
+		session.setAttribute("loginUser", loginUser);
+		return 1;
 	}
 }

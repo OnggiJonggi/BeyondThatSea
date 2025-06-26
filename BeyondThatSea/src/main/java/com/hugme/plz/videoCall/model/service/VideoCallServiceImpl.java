@@ -43,7 +43,7 @@ public class VideoCallServiceImpl implements VideoCallService{
 	
 	//페이지 접근시 자신의 방 리스트를 보여준다.
 	@Override
-	public void myRoomList(HttpSession session) {
+	public void myRoomList(HttpSession session) throws Exception{
 		Member m = (Member)session.getAttribute("loginUser");
 		List<VideoCall> list = dao.myRoomList(sqlSession, m);
 		
@@ -59,7 +59,7 @@ public class VideoCallServiceImpl implements VideoCallService{
 	
 	//초대받고 수락 대기중인 방 조회
 	@Override
-	public void myInvitedRoomList(HttpSession session) {
+	public void myInvitedRoomList(HttpSession session) throws Exception{
 		Member m = (Member)session.getAttribute("loginUser");
 		List<VideoCall> list = dao.myInvitedRoomList(sqlSession, m);
 		
@@ -83,6 +83,7 @@ public class VideoCallServiceImpl implements VideoCallService{
 		
 		vc.setUserNo(m.getUserNo());
 		vc.setVcId(Regexp.createUUID());
+		vc.setCreateTimestamp(new Timestamp(System.currentTimeMillis()));
 		
 		//openvidu세션 생성
 		SessionProperties properties = new SessionProperties.Builder().build();
@@ -104,7 +105,7 @@ public class VideoCallServiceImpl implements VideoCallService{
 					.status("Y")
 					.roleType("M")
 					.build();
-			result = dao.insertParticipate(sqlSession,vcm);
+			result = dao.insertModerator(sqlSession,vcm);
 			
 			//세션에 해당 방 정보 저장
 			session.setAttribute("videoCallRoom", vc);
@@ -125,9 +126,8 @@ public class VideoCallServiceImpl implements VideoCallService{
 		if(list==null || list.isEmpty()) return 0;
 		boolean flag = false;
 		for(VideoCall vcFor : list) {
-			//vcId와 createTimestamp로 방에 들어갈 거에요.
-			if(Arrays.equals(vcFor.getVcId(), vc.getVcId())
-					|| vcFor.getCreateTimestamp().equals(vc.getCreateTimestamp())) {
+			//vcId로 방에 들어갈 거에요.
+			if(Arrays.equals(vcFor.getVcId(), vc.getVcId())) {
 				vc = vcFor;
 				flag = true;
 				break;
@@ -192,6 +192,42 @@ public class VideoCallServiceImpl implements VideoCallService{
         VideoCall vc = VideoCall.builder().vcId(vcId).build();
         vc = dao.selectRoom(sqlSession, vc);
 		session.setAttribute("videoCallRoom", vc);
+		
+		return result;
+	}
+	
+	//초대
+	@Override
+	public int inviteUser(HttpSession session, String userId, String vcIdStr) throws Exception {
+		String hostUserNo = ((Member)session.getAttribute("loginUser")).getUserNo();
+		byte[] vcId;
+		int result = 1;
+		
+		//영상 통화방 안에서 초대 - session의 videoCallRoom에서 vcId추출
+		//영상 통화방 밖에서 초대 - requestparm vcid이용
+		
+		if(vcIdStr==null) { //영상 통화방 안에서 초대
+			vcId = ((VideoCall)session.getAttribute("videoCallRoom")).getVcId();
+			
+		}else {//영상 통화방 밖에서 초대
+			vcId = vcIdStr.getBytes();
+		}
+		
+		Map<String, Object> map = new HashMap<>();
+		map.put("userId", userId);
+		map.put("vcId", vcId);
+		map.put("hostUserNo", hostUserNo);
+		
+		//초대한 유저가 해당 방의 접근 권한이 있는지 확인
+		VcMember vcm = VcMember.builder()
+				.userNo(hostUserNo)
+				.vcId(vcId)
+				.build();
+		String roleType = dao.haveLicense(sqlSession, vcm);
+		if(roleType == null || roleType.equals("S")) return 0; //없으면 가라
+		
+		//초대받은 유저 상태 'U'(초대 수락하지 않음)으로 VC_MEMBER에 넣기
+		result *= dao.insertSubscriber(sqlSession, map);
 		
 		return result;
 	}

@@ -54,6 +54,8 @@
 		</form>
 	</div>
 	
+    <!-- 초대 : 다른 사람을 초대할 때는 해당 유저의 userId, 방 vcId를 알아내 보내자-->
+	
 	
 	<script type="text/javascript">
 	

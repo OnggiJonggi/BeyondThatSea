@@ -4,10 +4,10 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <script src="${pageContext.request.contextPath}/openvidu-webcomponent-2.23.0.js"></script>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/openvidu-webcomponent-2.23.0.css">
 <c:set var="vcRoom" value="${sessionScope.videoCallRoom}"/>
-<meta charset="UTF-8">
 <title>${vcRoom.UserName}님의 방</title>
 </head>
 <body>
@@ -21,6 +21,9 @@
             session-id="${vcRoom.vcSession}">
         </openvidu-webcomponent>
     </div>
+    
+    <!-- 초대 : 다른 사람을 초대할 때는 해당 유저의 userId를 알아내어 vcId와 함께 보내자-->
+    <!-- 방에서 나갈 때는 videoCallRoom세션 날려야함 안그럼 큰일남 -->
 
     <script>
     <!-- 토큰 처리 -->

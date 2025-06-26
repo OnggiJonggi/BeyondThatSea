@@ -13,6 +13,6 @@ public class InterceptorConfig implements WebMvcConfigurer{
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(new MemberInterceptor())
 			.addPathPatterns("/memeber/*","/videoCall/*")
-			.excludePathPatterns("insertExcludeHere");
+			.excludePathPatterns("/member/checkUserId", "/member/login", "/member/enroll");
 	}
 }
