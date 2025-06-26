@@ -80,7 +80,7 @@
 	<select id="haveLicense" parameterType="VcMember" resultType="string">
 		select ROLE_TYPE
 		from VC_MEMBER
-		left join on (VC_MEMBER.VC_no = VIDIEO_CALL.VC_NO)
+		left join on (VC_MEMBER.VC_no = VIDEO_CALL.VC_NO)
 		where VC_MEMBER.USER_NO = #{userNo}
 		and VC_MEMBER.VC_ID = #{vcId}
 	</select>
@@ -101,7 +101,7 @@
 		and VC_ID = #{vcId}
 	</update>
 	
-	<select id="selectRoom" parameterType="VideoCall">
+	<select id="selectRoom" parameterType="VideoCall" resultType="VideoCall">
 		select VC_NO, USER_NO, VC_ID, VC_SESSION, VC_NAME, CREATE_TIMESTAMP
 			,MAX_PARTICIPANTS ,STATUS
 		from VIDEO_CALL

@@ -1,9 +1,7 @@
 package com.hugme.plz.videoCall.model.service;
 
-import java.util.List;
 import java.util.Map;
 
-import com.hugme.plz.member.model.vo.Member;
 import com.hugme.plz.videoCall.model.vo.VideoCall;
 
 import jakarta.servlet.http.HttpSession;

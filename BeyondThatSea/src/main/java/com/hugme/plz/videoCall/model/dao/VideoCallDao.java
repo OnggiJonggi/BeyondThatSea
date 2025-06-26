@@ -17,7 +17,7 @@ public class VideoCallDao {
 	}
 
 	public int countMyVcRoom(SqlSessionTemplate sqlSession, Member m) {
-		return sqlSession.selectOne("videoCallMapper.countMyVcRoomList",m);
+		return sqlSession.selectOne("videoCallMapper.countMyVcRoom",m);
 	}
 	
 	public List<VideoCall> myRoomList(SqlSessionTemplate sqlSession, Member m) {

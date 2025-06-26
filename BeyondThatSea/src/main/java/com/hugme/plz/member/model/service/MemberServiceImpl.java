@@ -1,10 +1,8 @@
 package com.hugme.plz.member.model.service;
 
 import com.hugme.plz.common.Regexp;
-import com.hugme.plz.config.OpenViduConfig;
 import com.hugme.plz.member.model.dao.MemberDao;
 import com.hugme.plz.member.model.vo.Member;
-import io.openvidu.java.client.OpenVidu;
 import jakarta.servlet.http.HttpSession;
 
 import org.mybatis.spring.SqlSessionTemplate;
@@ -15,9 +13,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class MemberServiceImpl implements MemberService{
 
-    private final OpenViduConfig openViduConfig;
-
-    private final OpenVidu openViduBean;
 	@Autowired
 	private SqlSessionTemplate sqlSession;
 	@Autowired
@@ -25,11 +20,6 @@ public class MemberServiceImpl implements MemberService{
 	@Autowired
 	private BCryptPasswordEncoder bcrypt;
 
-    MemberServiceImpl(OpenVidu openViduBean, OpenViduConfig openViduConfig) {
-        this.openViduBean = openViduBean;
-        this.openViduConfig = openViduConfig;
-    }
-	
 	//회원가입
 	@Override
 	public int enroll(Member m) {
