@@ -7,18 +7,16 @@
 	
 	<insert id="createRoom" parameterType="VideoCall">
 		insert into VIDEO_CALL(
-			VC_SESSION
+			VC_ID
 			,USER_NO
-			,VC_ID
 			,VC_NAME
 			,CREATE_TIMESTAMP
 			,MAX_PARTICIPANTS
 			,STATUS
 			)
 		values(
-			#{vcSession}
+			#{vcId}
 			,#{userNo}
-			,#{vcId}
 			,#{vcName}
 			,#{createTimestamp}
 			,#{maxParticipants}
@@ -33,7 +31,7 @@
 	</select>
 	
 	<select id="myRoomList" parameterType="Member" resultType="VideoCall">
-		select USER_NO, VC_ID, VC_SESSION, VC_NAME, CREATE_TIMESTAMP
+		select USER_NO, VC_ID, VC_NAME, CREATE_TIMESTAMP
 			,MAX_PARTICIPANTS ,STATUS
 		from VIDEO_CALL
 		where USER_NO = #{userNo}
@@ -43,9 +41,8 @@
 	
 	<select id="myInvitedRoomList" parameterType="Member" resultType="VideoCall">
 		select 
-			vc.VC_SESSION
+			vc.VC_ID
 			,vc.USER_NO
-			,vc.VC_ID
 			,vc.VC_NAME
 			,vc.CREATE_TIMESTAMP
 			,vc.MAX_PARTICIPANTS
@@ -82,8 +79,7 @@
 	
 	<update id="updateRoom" parameterType="VideoCall">
 		update VC_MEMBER
-		set VC_SESSION = #{vcSession}
-			,VC_NAME = #{vcName}
+		set VC_NAME = #{vcName}
 			,MAX_PARTICIPANTS = #{maxParticipants}
 			,STATUS = #{status}
 		where VC_ID = #{vcId}
@@ -97,7 +93,7 @@
 	</update>
 	
 	<select id="selectRoom" parameterType="VideoCall" resultType="VideoCall">
-		select VC_NO, USER_NO, VC_ID, VC_SESSION, VC_NAME, CREATE_TIMESTAMP
+		select VC_NO, USER_NO, VC_ID, VC_NAME, CREATE_TIMESTAMP
 			,MAX_PARTICIPANTS ,STATUS
 		from VIDEO_CALL
 		where USER_NO = #{userNo}

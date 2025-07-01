@@ -17,6 +17,31 @@ import reactor.core.publisher.Mono;
 public class DailyService {
     private final WebClient webClient;
     
+    //토큰 생성
+    public Mono<String> createMeetingToken(byte[] vcId, Member m, String roleType) throws Exception {
+    	
+    	//vcId를 String으로 변환
+    	String vcIdStr = new String(vcId, StandardCharsets.UTF_8);
+    	
+    	boolean isOwner = "owner".equals(roleType);
+    	
+    	Map<String, Object> requestBody = Map.of(
+    		    "properties", Map.of( // ✅ "properties" 필드 필수!
+    		        "room_name", vcIdStr,
+    		        "is_owner", isOwner,
+    		        "user_name", m.getUserName(),
+    		        "enable_screenshare", true,
+    		        "exp", System.currentTimeMillis()/1000 + 86400
+    		    )
+    		);
+    	
+    	return webClient.post()
+    			.uri("/meeting-tokens")
+    			.bodyValue(requestBody)
+    			.retrieve()
+    			.bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+    			.map(response -> (String) response.get("token"));
+    }
     
     //새로운 방 생성
     public String createRoom(byte[] vcId, String token) {
@@ -45,28 +70,5 @@ public class DailyService {
         return url;
     }
     
-    //토큰 생성
-    public Mono<String> createMeetingToken(byte[] vcId, Member m, String roleType) throws Exception {
-    	
-    	//vcId를 String으로 변환
-    	String vcIdStr = new String(vcId, StandardCharsets.UTF_8);
-    	
-    	boolean isOwner = "owner".equals(roleType);
-    	
-    	Map<String, Object> tokenProperties = Map.of(
-            "room_name", vcIdStr,
-            "is_owner", isOwner,
-            "user_name", m.getUserName(),
-            "enable_screenshare", true,
-            "exp", System.currentTimeMillis()/1000 + 86400
-        );
-        
-        return webClient.post()
-            .uri("/meeting-tokens")
-            .bodyValue(tokenProperties)
-            .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-            .map(response -> (String) response.get("token"));
-    }
 
 }

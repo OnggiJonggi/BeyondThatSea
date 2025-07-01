@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-	<th:block th:replace="/common/header :: head"></th:block>
+<th:block th:replace="~{/common/header :: head}"></th:block>
 <meta charset="UTF-8" />
 <title>저 바다 너머</title>
 </head>
 <body>
-	<th:block th:replace="/common/header :: header"></th:block>
+<th:block th:replace="~{/common/header :: header}"></th:block>
 
 	첫 시안은 YAMI가 되었습니다. 숭고한 희생...
 	<br>
@@ -25,10 +25,10 @@
 	<hr>
 	
 
-	<th:block th:if="${loginUser.userName}">
-		<th:block th:text="${loginUser.userName}"></th:block>님 딱히 환영하진 않습니다.
+	<th:block th:if="${loginUser}">
+		<th:block th:text="${loginUser.userName ?: '누구세요?' }"></th:block>님 딱히 환영하진 않습니다.
 	</th:block>
-	<th:block th:unless="${loginUser.userName}">
+	<th:block th:unless="${loginUser}">
 		<a th:href="@{/member/enroll}">회원가입</a>
 		<br>
 		<form th:action="@{/member/login}" method="post">
@@ -47,11 +47,11 @@
 
 <script th:inline="javascript">
 $(document).ready(function(){
-
+	
 	//내부 ip주소 알아보기
     $('#getIpBtn').click(function(){
         $.ajax({
-            url : "@{/findServerPrivateIP}",
+            url : /*[[@{/findServerPrivateIP}]]*/ '내부ip',
             method : "post",
             data : {},
             success : function(result){
@@ -70,8 +70,8 @@ $(document).ready(function(){
         var userId = $('input[name="userId"]').val();
         var userPwd = $('input[name="userPwd"]').val();
         $.ajax({
-        	url: "@{/member/login}",
-            method : "post",
+        	url: /*[[@{/member/login}]]*/ '로그인',
+            method : "POST",
             data : {userId, userPwd},
             success : function(result){
             	location.reload();

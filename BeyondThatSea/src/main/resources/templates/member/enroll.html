@@ -2,12 +2,12 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <th:block th:replace="/common/header :: head"></th:block>
+<th:block th:replace="~{/common/header :: head}"></th:block>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>회원가입</title>
   </head>
   <body>
-    <th:block th:replace="/common/header :: header"></th:block>
+<th:block th:replace="~{/common/header :: header}"></th:block>
     <h3>회원가입</h3>
     <form
       th:action="@{/member/enroll}"
@@ -81,7 +81,7 @@
       </div>
     </form>
 
-    <script type="text/javascript">
+    <script th:inline="javascript">
       //모든 검증이 true여야 sumbmit버튼 활성화됨
       let idPass = false;
       let pwdPass = false;
@@ -112,7 +112,7 @@
         let userId = document.getElementById("userId").value.trim();
         $.ajax({
           type: "POST",
-          url: /*[[@{/member/checkUserId}]]*/ "null",
+          url: /*[[@{/member/checkUserId}]]*/ "",
           data: {
             userId: userId,
           },

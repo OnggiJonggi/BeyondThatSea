@@ -7,7 +7,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
-@PropertySource("classpath:config/dailyco.properties")
+@PropertySource("classpath:config/dailyco-config.properties")
 public class VideoCallConfig {
     @Value("${daily.api.url}")
     private String apiUrl;

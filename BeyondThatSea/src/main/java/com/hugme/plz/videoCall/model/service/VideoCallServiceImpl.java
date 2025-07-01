@@ -106,7 +106,6 @@ public class VideoCallServiceImpl implements VideoCallService{
 			
 			//세션에 해당 방 정보 저장
 			session.setAttribute("vcRoomUrl", createdRoom);
-			session.setAttribute("vcToken", ownerToken);
 			session.setAttribute("vcRoom", vc);
 		}
 		

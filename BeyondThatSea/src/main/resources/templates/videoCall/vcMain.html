@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
   <head>
-    <th:block th:replace="/common/header :: head"></th:block>
+<th:block th:replace="~{/common/header :: head}"></th:block>
     <meta charset="UTF-8" />
     <title>영상통화</title>
   </head>
   <body>
-    <th:block th:replace="/common/header :: header"></th:block>
+<th:block th:replace="~{/common/header :: header}"></th:block>
 
     <h3>니가 받은 초대</h3>
     <div id="invitedRoom">
@@ -61,94 +61,140 @@
 
     <!-- 초대 : 다른 사람을 초대할 때는 해당 유저의 userId, 방 vcId를 알아내 보내자-->
 
-    <script type="text/javascript">
-      //------------------------새로운 방 생성-----------------------
+    <script th:inline="javascript">
+      $(function () {
+        //------------------------새로운 방 생성-----------------------
 
-      //모든 검증이 true여야 sumbmit버튼 활성화됨
-      let vcNamePass = false;
-      let mpPass = false;
+        //모든 검증이 true여야 sumbmit버튼 활성화됨
+        let vcNamePass = false;
+        let mpPass = false;
 
-      //방 이름 검증
-      document.getElementById("vcName").addEventListener("input", function () {
-        let vcNameResult = document.getElementById("vcNameResult");
-        if (this.value.trim().length > 30) {
-          vcNameResult.innerHTML = "이름이 너무 길어요";
-          vcNamePass = false;
-        } else if (this.value.trim().length < 1) {
-          vcNameResult.innerHTML = "이름을 입력해 주세요";
-          vcNamePass = false;
-        } else {
-          vcNameResult.innerHTML = "좋아요!";
-          vcNamePass = true;
-        }
-        toggleSubmit();
-      });
-
-      //참여인원 수 검증
-      document
-        .getElementById("maxParticipants")
-        .addEventListener("input", function () {
-          let mpResult = document.getElementById("mpResult");
-          if (this.value <= 0 || this.value > 10) {
-            mpResult.innerHTML = "최대 참여인원을 10명 이하로 작성해 주세요.";
-            mpPass = false;
-          } else {
-            mpResult.innerHTML = "좋아요!";
-            mpPass = true;
-          }
-          toggleSubmit();
-        });
-
-      document
-        .getElementById("insertReset")
-        .addEventListener("click", function () {
-          if (confirm("진짜?")) {
-            document.getElementById("createRoomForm").reset();
-            vcNamePass = false;
-            mpPass = false;
-
-            document.getElementById("vcNameResult").innerHTML = "";
-            document.getElementById("mpResult").innerHTML = "";
-            document.getElementById("finalResult").innerHTML = "";
+        //방 이름 검증
+        document
+          .getElementById("vcName")
+          .addEventListener("input", function () {
+            let vcNameResult = document.getElementById("vcNameResult");
+            if (this.value.trim().length > 30) {
+              vcNameResult.innerHTML = "이름이 너무 길어요";
+              vcNamePass = false;
+            } else if (this.value.trim().length < 1) {
+              vcNameResult.innerHTML = "이름을 입력해 주세요";
+              vcNamePass = false;
+            } else {
+              vcNameResult.innerHTML = "좋아요!";
+              vcNamePass = true;
+            }
             toggleSubmit();
+          });
+
+        //참여인원 수 검증
+        document
+          .getElementById("maxParticipants")
+          .addEventListener("input", function () {
+            let mpResult = document.getElementById("mpResult");
+            if (this.value <= 0 || this.value > 10) {
+              mpResult.innerHTML = "최대 참여인원을 10명 이하로 작성해 주세요.";
+              mpPass = false;
+            } else {
+              mpResult.innerHTML = "좋아요!";
+              mpPass = true;
+            }
+            toggleSubmit();
+          });
+
+        document
+          .getElementById("insertReset")
+          .addEventListener("click", function () {
+            if (confirm("진짜?")) {
+              document.getElementById("createRoomForm").reset();
+              vcNamePass = false;
+              mpPass = false;
+
+              document.getElementById("vcNameResult").innerHTML = "";
+              document.getElementById("mpResult").innerHTML = "";
+              document.getElementById("finalResult").innerHTML = "";
+              toggleSubmit();
+            }
+          });
+
+        let toggolePassed = false;
+        function toggleSubmit() {
+          let finalResult = document.getElementById("finalResult");
+          if (vcNamePass && mpPass) {
+            setButtonState("active");
+            toggolePassed = true;
+          } else if (toggolePassed == true) {
+            setButtonState("disabled");
+            toggolePassed = false;
           }
-        });
-
-      let toggolePassed = false;
-      function toggleSubmit() {
-        let finalResult = document.getElementById("finalResult");
-        if (vcNamePass && mpPass) {
-          setButtonState("active");
-          toggolePassed = true;
-        } else if (toggolePassed == true) {
-          setButtonState("disabled");
-          toggolePassed = false;
         }
-      }
 
-      function setButtonState(state) {
-        let insertSubmit = document.getElementById("insertSubmit");
-        let finalResult = document.getElementById("finalResult");
+        function setButtonState(state) {
+          let insertSubmit = document.getElementById("insertSubmit");
+          let finalResult = document.getElementById("finalResult");
 
-        switch (state) {
-          case "disabled":
-            finalResult.innerHTML = "모든 필수 항목을 확인해 주세요";
-            insertSubmit.disabled = true;
-            break;
-          case "active":
-            finalResult.innerHTML = "좋아요!";
-            insertSubmit.disabled = false;
-            break;
+          switch (state) {
+            case "disabled":
+              finalResult.innerHTML = "모든 필수 항목을 확인해 주세요";
+              insertSubmit.disabled = true;
+              break;
+            case "active":
+              finalResult.innerHTML = "좋아요!";
+              insertSubmit.disabled = false;
+              break;
+          }
         }
-      }
 
-      document
-        .getElement("createRoomForm")
-        .addEventListener("click", function (e) {
+        $("#createRoomForm").on("submit", function (e) {
           e.preventDefault();
+
+          let formData = {
+            vcName: $("#vcName").val(),
+            maxParticipants: $("#maxParticipants").val(),
+          };
+
+          $.ajax({
+            url: /*[[@{/videoCall/createRoom}]]*/ '새로운 방 만들기',
+            method: "POST",
+            data: formData,
+            success: function (res) {
+              if (res.result === "success") {
+                createRoomArea(res);
+              } else {
+                alert("방 생성에 실패했습니다.");
+              }
+            },
+            error: function () {
+              alert("서버 오류가 발생했습니다.");
+            },
+          });
         });
 
-      //------------------------초대받은 방 참여-------------------
+        //생성된 방 정보 동적 생성
+        function createRoomArea(data) {
+          let userName = data.vcRoom.nameSeed;
+          let vcName = data.vcRoom.vcId;
+          let createTimestamp = new Date(
+            data.vcRoom.createTimestamp
+          ).toLocaleString();
+          let vcRoomUrl = data.vcRoomUrl;
+
+          // 동적으로 영역 생성
+          let html = `
+            <div class="card mt-3" id="createdRoomCard">
+              <div class="card-body">
+                <h5 class="card-title">${userName} 님의 방 - ${vcName} (${createTimestamp})</h5>
+                <a href="${vcRoomUrl}" target="_blank" class="btn btn-primary">참여하기</a>
+              </div>
+            </div>
+          `;
+
+          $("#createdRoomCard").remove();
+          $("#createRoomForm").after(html);
+        }
+
+        //------------------------초대받은 방 참여-------------------
+      });
     </script>
   </body>
 </html>
