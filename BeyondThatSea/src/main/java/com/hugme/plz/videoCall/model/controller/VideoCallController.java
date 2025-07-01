@@ -43,6 +43,7 @@ public class VideoCallController {
 	}
 	
 	//새로운 방 생성
+	@ResponseBody
 	@PostMapping("/createRoom")
 	public String createRoom(HttpSession session, Model model, VideoCall vc) {
 		try {

@@ -13,20 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hugme.plz.common.Regexp;
+import com.hugme.plz.config.VideoCallConfig;
 import com.hugme.plz.member.model.vo.Member;
 import com.hugme.plz.videoCall.model.dao.VideoCallDao;
 import com.hugme.plz.videoCall.model.vo.VcMember;
 import com.hugme.plz.videoCall.model.vo.VideoCall;
 
-import io.openvidu.java.client.Connection;
-import io.openvidu.java.client.ConnectionProperties;
-import io.openvidu.java.client.ConnectionType;
-import io.openvidu.java.client.OpenVidu;
-import io.openvidu.java.client.OpenViduHttpException;
-import io.openvidu.java.client.OpenViduJavaClientException;
-import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.java.client.Session;
-import io.openvidu.java.client.SessionProperties;
 import jakarta.servlet.http.HttpSession;
 
 
@@ -36,7 +28,10 @@ public class VideoCallServiceImpl implements VideoCallService{
 	@Autowired
 	private SqlSessionTemplate sqlSession;
     @Autowired
-    private OpenVidu openvidu;
+    private VideoCallConfig vcConfig;
+    @Autowired
+    private DailyService dailyService;
+    
 	@Autowired
 	private VideoCallDao dao;
 	
@@ -69,7 +64,7 @@ public class VideoCallServiceImpl implements VideoCallService{
 	
 	//새로운 방 생성
 	@Override
-	@Transactional(rollbackFor = {OpenViduJavaClientException.class, OpenViduHttpException.class})
+	@Transactional
 	public int createRoom(HttpSession session, VideoCall vc) throws Exception{
 		
 		Member m = (Member)session.getAttribute("loginUser");
@@ -82,17 +77,19 @@ public class VideoCallServiceImpl implements VideoCallService{
 				|| dao.countMyVcRoom(sqlSession,m)>5) return 0;
 		
 		vc.setUserNo(m.getUserNo());
-		vc.setVcId(Regexp.createUUID());
+		byte[] vcId = Regexp.createUUID();
+		vc.setVcId(vcId);
 		vc.setCreateTimestamp(new Timestamp(System.currentTimeMillis()));
 		
-		//openvidu세션 생성
-		SessionProperties properties = new SessionProperties.Builder().build();
-		Session vcSession = openvidu.createSession(properties);
-		String sessionId = vcSession.getSessionId();
-		vc.setVcSession(sessionId);
+		// 관리자용 토큰 생성
+		String ownerToken = dailyService.createMeetingToken(vcId, m, "owner").block();
+		if(ownerToken==null) return 0;
 		
+		//daily.co에 방 생성
+        String createdRoom = dailyService.createRoom(vcId, ownerToken);
+        if(createdRoom==null) return 0;
+        
 		//데이터 모음집 넣기
-		vc.setCurrParticipants(1);
 		vc.setUserName(m.getUserName());
 		vc.setNameSeed(m.getNameSeed());
 		
@@ -100,15 +97,17 @@ public class VideoCallServiceImpl implements VideoCallService{
 		int result = dao.createRoom(sqlSession,vc);
 		if(result>0) {
 			VcMember vcm = VcMember.builder()
-					.vcNo(vc.getVcNo())
+					.vcId(vcId)
 					.userNo(m.getUserNo())
 					.status("Y")
 					.roleType("M")
 					.build();
-			result = dao.insertModerator(sqlSession,vcm);
+			result = dao.insertOwner(sqlSession,vcm);
 			
 			//세션에 해당 방 정보 저장
-			session.setAttribute("videoCallRoom", vc);
+			session.setAttribute("vcRoomUrl", createdRoom);
+			session.setAttribute("vcToken", ownerToken);
+			session.setAttribute("vcRoom", vc);
 		}
 		
 		return result;
@@ -136,13 +135,8 @@ public class VideoCallServiceImpl implements VideoCallService{
 		if(!flag) return 0;
 
 		//openvidu세션 생성
-		SessionProperties properties = new SessionProperties.Builder().build();
-		Session vcSession = openvidu.createSession(properties);
-		String sessionId = vcSession.getSessionId();
-		vc.setVcSession(sessionId);
 		
 		//db에 저장하지 않는 프론트용 데이터
-		vc.setCurrParticipants(1);
 		vc.setUserName(m.getUserName());
 		vc.setNameSeed(m.getNameSeed());
 		
@@ -150,7 +144,6 @@ public class VideoCallServiceImpl implements VideoCallService{
 		int result = dao.updateRoom(sqlSession,vc);
 		if(result>0) {
 			VcMember vcm = VcMember.builder()
-					.vcNo(vc.getVcNo())
 					.userNo(m.getUserNo())
 					.status("Y")
 					.roleType("M")
@@ -238,11 +231,11 @@ public class VideoCallServiceImpl implements VideoCallService{
     	Map<String, Object> result = new HashMap<>();
 
         //openvidu 세션 조회
-        Session vcSession = openvidu.getActiveSession(sessionId);
-        if (vcSession == null) {
-            result.put("error", "세션이 존재하지 않습니다.");
-            return result;
-        }
+//        Session vcSession = openvidu.getActiveSession(sessionId);
+//        if (vcSession == null) {
+//            result.put("error", "세션이 존재하지 않습니다.");
+//            return result;
+//        }
         
         //여기 들어올 자격이 있는가?
         Member m = (Member)session.getAttribute("loginUser");
@@ -261,23 +254,23 @@ public class VideoCallServiceImpl implements VideoCallService{
     	}
         
         //roleType에 따른 openvidu권한 설정
-        OpenViduRole role;
-        switch(roleType) {
-        case "M": role = OpenViduRole.MODERATOR; break;
-        case "P": role = OpenViduRole.PUBLISHER; break;
-        case "S":
-        default : role = OpenViduRole.SUBSCRIBER;
-        }
+//        OpenViduRole role;
+//        switch(roleType) {
+//        case "M": role = OpenViduRole.MODERATOR; break;
+//        case "P": role = OpenViduRole.PUBLISHER; break;
+//        case "S":
+//        default : role = OpenViduRole.SUBSCRIBER;
+//        }
+//
+//        //토큰 생성
+//        ConnectionProperties props = new ConnectionProperties.Builder()
+//                .type(ConnectionType.WEBRTC)
+//                .role(role)
+//                .data(m.getUserName()+":"+m.getNameSeed()) //data추출할 때는 뒤에서부터 : 찾기
+//                .build();
+//        Connection connection = vcSession.createConnection(props);
 
-        //토큰 생성
-        ConnectionProperties props = new ConnectionProperties.Builder()
-                .type(ConnectionType.WEBRTC)
-                .role(role)
-                .data(m.getUserName()+":"+m.getNameSeed()) //data추출할 때는 뒤에서부터 : 찾기
-                .build();
-        Connection connection = vcSession.createConnection(props);
-
-        result.put("token", connection.getToken());
+//        result.put("token", connection.getToken());
         
         return result;
 	}

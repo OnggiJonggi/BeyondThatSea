@@ -11,12 +11,8 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 public class VcMember {
-	private String vcNo;
+	private byte[] vcId;
 	private String userNo;
 	private String status; //Y:접속, N:미접속
 	private String roleType; //M:방장, P:관리자, S:일반
-	//PUBLISHER,SUBSCRIBER,MODERATOR
-	
-	//VIDEO_CALL join
-	private byte[] vcId;
 }

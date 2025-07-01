@@ -6,24 +6,19 @@
 <mapper namespace="videoCallMapper">
 	
 	<insert id="createRoom" parameterType="VideoCall">
-	    <selectKey keyProperty="vcNo" resultType="int" order="BEFORE">
-	        SELECT seq_vc.nextval FROM dual
-	    </selectKey>
 		insert into VIDEO_CALL(
-			VC_NO
+			VC_SESSION
 			,USER_NO
 			,VC_ID
-			,VC_SESSION
 			,VC_NAME
 			,CREATE_TIMESTAMP
 			,MAX_PARTICIPANTS
 			,STATUS
 			)
 		values(
-			#{vcNo}
+			#{vcSession}
 			,#{userNo}
 			,#{vcId}
-			,#{vcSession}
 			,#{vcName}
 			,#{createTimestamp}
 			,#{maxParticipants}
@@ -38,7 +33,7 @@
 	</select>
 	
 	<select id="myRoomList" parameterType="Member" resultType="VideoCall">
-		select VC_NO, USER_NO, VC_ID, VC_SESSION, VC_NAME, CREATE_TIMESTAMP
+		select USER_NO, VC_ID, VC_SESSION, VC_NAME, CREATE_TIMESTAMP
 			,MAX_PARTICIPANTS ,STATUS
 		from VIDEO_CALL
 		where USER_NO = #{userNo}
@@ -47,10 +42,10 @@
 	</select>
 	
 	<select id="myInvitedRoomList" parameterType="Member" resultType="VideoCall">
-		select vc.VC_NO
+		select 
+			vc.VC_SESSION
 			,vc.USER_NO
 			,vc.VC_ID
-			,vc.VC_SESSION
 			,vc.VC_NAME
 			,vc.CREATE_TIMESTAMP
 			,vc.MAX_PARTICIPANTS
@@ -59,14 +54,14 @@
 			,m.NAME_SEED
 		from VIDEO_CALL vc
 		left join MEMBER m on(vc.USER_NO = m.USER_NO)
-		left join VC_MEMBER vcm on(vc.VC_NO = vcm.VC_NO)
+		left join VC_MEMBER vcm on(vc.VC_ID = vcm.VC_ID)
 		where vcm.USER_NO = #{userNo}
 		and vcm.status = 'U'
 	</select>
 	
-	<insert id="insertModerator" parameterType="VcMember">
-		insert into VC_MEMBER(VC_NO,USER_NO,STATUS,ROLE_TYPE)
-		values(#{vcNo},#{userNo},#{status},#{roleType})
+	<insert id="insertOwner" parameterType="VcMember">
+		insert into VC_MEMBER(VC_ID,USER_NO,STATUS,ROLE_TYPE)
+		values(#{vcId},#{userNo},#{status},#{roleType})
 	</insert>
 	
 	<update id="updateParticipate" parameterType="VcMember">
@@ -80,7 +75,7 @@
 	<select id="haveLicense" parameterType="VcMember" resultType="string">
 		select ROLE_TYPE
 		from VC_MEMBER
-		left join on (VC_MEMBER.VC_no = VIDEO_CALL.VC_NO)
+		left join on (VC_MEMBER.VC_ID = VIDEO_CALL.VC_ID)
 		where VC_MEMBER.USER_NO = #{userNo}
 		and VC_MEMBER.VC_ID = #{vcId}
 	</select>
@@ -91,7 +86,7 @@
 			,VC_NAME = #{vcName}
 			,MAX_PARTICIPANTS = #{maxParticipants}
 			,STATUS = #{status}
-		where VC_NO = #{vcNo}
+		where VC_ID = #{vcId}
 	</update>
 	
 	<update id="goInvitedRoom" parameterType="VcMember">

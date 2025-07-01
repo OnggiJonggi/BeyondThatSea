@@ -28,8 +28,8 @@ public class VideoCallDao {
 		return sqlSession.selectList("videoCallMapper.myInvitedRoomList",m);
 	}
 	
-	public int insertModerator(SqlSessionTemplate sqlSession, VcMember vcm) {
-		return sqlSession.insert("videoCallMapper.insertModerator",vcm);
+	public int insertOwner(SqlSessionTemplate sqlSession, VcMember vcm) {
+		return sqlSession.insert("videoCallMapper.insertOwner",vcm);
 	}
 
 	public int updateParticipate(SqlSessionTemplate sqlSession, VcMember vcm) {

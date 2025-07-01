@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+  <th:block th:fragment="head">
+    <head>
+      <meta charset="UTF-8" />
+      <title>header</title>
+      <script
+        src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"
+      ></script>
+      <script
+        src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"
+      ></script>
+    </head>
+  </th:block>
+  <th:block th:fragment="header">
+    <body>
+      <script type="text/javascript">
+        let msg = "${alertMsg}";
+        if (msg != "") {
+          alert(msg);
+        }
+      </script>
+    </body>
+  </th:block>
+</html>
