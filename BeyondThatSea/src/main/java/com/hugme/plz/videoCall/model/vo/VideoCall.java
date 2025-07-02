@@ -23,4 +23,7 @@ public class VideoCall {
 	private String userName; //member
 	private byte[] nameSeed; //member
 	
+	//자신의 관리 권한
+	private String roleTye; //vc_member
+	
 }

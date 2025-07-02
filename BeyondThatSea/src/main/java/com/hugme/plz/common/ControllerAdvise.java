@@ -25,21 +25,11 @@ public class ControllerAdvise {
 		}
 	}
 	
-	
-	@ModelAttribute("myVcRoom")
-	public String addMyVcRoom(HttpSession session) {
+	@ModelAttribute("myVcRoom") //이 메소드가 반환하는 값을 "loginUser"라는 이름으로 model에 추가함
+	public Member addMyVcRoom(HttpSession session) {
+		//session에 loginUser가 있는지 판별 수 리턴
 		if(session.getAttribute("myVcRoom") != null) {
-			return (String) session.getAttribute("myVcRoom");
-		} else {
-			return null;
-		}
-	}
-	
-	
-	@ModelAttribute("invitedRoom")
-	public String addInvitedRoom(HttpSession session) {
-		if(session.getAttribute("invitedRoom") != null) {
-			return (String) session.getAttribute("invitedRoom");
+			return (Member) session.getAttribute("myVcRoom");
 		} else {
 			return null;
 		}

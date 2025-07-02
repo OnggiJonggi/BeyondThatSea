@@ -1,6 +1,7 @@
 package com.hugme.plz.videoCall.model.service;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -49,14 +50,33 @@ public class VideoCallServiceImpl implements VideoCallService{
 		session.setAttribute("myVcRoom", list);
 	}
 	
-	//초대받고 수락 대기중인 방 조회
+	//초대받은 방 조회
 	@Override
-	public void myInvitedRoomList(HttpSession session) throws Exception{
+	public void myInvitedRoomList(HttpSession session, Model model) throws Exception{
 		Member m = (Member)session.getAttribute("loginUser");
 		List<VideoCall> list = dao.myInvitedRoomList(sqlSession, m);
 		
-		//세션에 퐁당
-		session.setAttribute("invitedRoom", list);
+		
+		
+		List<VideoCall> invitedRoom =new ArrayList<>();
+		List<VideoCall> allowedRoom =new ArrayList<>();
+		for(VideoCall vc : list ) {
+			if(vc.getRoleTye()==null) {
+				//관리 권한이 없다면 초대 수락하지 않은 방
+				invitedRoom.add(vc);
+			}else {
+				//관리 권한이 있으면 초대 수락한 방
+				allowedRoom.add(vc);
+			}
+		}
+		
+		//아직 초대 수락하지 않은 방
+		model.addAttribute("invitedRoom", invitedRoom);
+		
+		//초대 수락한 방
+		model.addAttribute("allowedRoom", allowedRoom);
+		
+		
 	}
 	
 	//새로운 방 생성

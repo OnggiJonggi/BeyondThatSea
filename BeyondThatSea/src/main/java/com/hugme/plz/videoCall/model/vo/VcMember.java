@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 public class VcMember {
 	private byte[] vcId;
 	private String userNo;
-	private String status; //Y:접속, N:미접속
-	private String roleType; //M:방장, P:관리자, S:일반
+	private String status; //상태(Y:접속, N:미접속, U:수락 대기중)
+	private String roleType; //관리 권한(O:생성자, A:관리자, S:관전자)
 }

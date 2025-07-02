@@ -31,8 +31,8 @@ public class VideoCallController {
 			//자신의 방 조회
 			service.myRoomList(session);
 			
-			//초대받고 수락 대기중인 방 조회
-			service.myInvitedRoomList(session);
+			//초대받은 방 조회
+			service.myInvitedRoomList(session,model);
 			
 			return "videoCall/vcMain";
 		} catch (Exception e) {
@@ -49,6 +49,9 @@ public class VideoCallController {
 		try {
 			int result = service.createRoom(session,model,vc);
 			if(result>0) {
+				//자신의 방 리스트 다시 조회
+				service.myRoomList(session);
+				
 				return "success";
 			}else {
 				throw new Exception();
@@ -77,7 +80,7 @@ public class VideoCallController {
 		}
 	}
 	
-	//초대받은 방 들어가기
+	//참여한 방 들어가기
 	@PostMapping("/goInvitedRoom")
 	public String goInvitedRoom(HttpSession session, String roomHref) {
 		try {

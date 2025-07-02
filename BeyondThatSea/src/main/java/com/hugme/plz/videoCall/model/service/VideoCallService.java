@@ -14,7 +14,7 @@ public interface VideoCallService {
 	void myRoomList(HttpSession session) throws Exception;
 	
 	//초대받고 수락 대기중인 방 조회
-	void myInvitedRoomList(HttpSession session) throws Exception;
+	void myInvitedRoomList(HttpSession session, Model model) throws Exception;
 	
 	//새로운 방 생성
 	int createRoom(HttpSession session, Model model, VideoCall vc) throws Exception;
@@ -30,6 +30,7 @@ public interface VideoCallService {
 
 	//다른 방 참여하기
 	int goInvitedRoom(HttpSession session, String roomHref) throws Exception;
+
 
 
 
