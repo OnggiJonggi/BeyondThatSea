@@ -2,6 +2,8 @@ package com.hugme.plz.videoCall.model.service;
 
 import java.util.Map;
 
+import org.springframework.ui.Model;
+
 import com.hugme.plz.videoCall.model.vo.VideoCall;
 
 import jakarta.servlet.http.HttpSession;
@@ -15,7 +17,7 @@ public interface VideoCallService {
 	void myInvitedRoomList(HttpSession session) throws Exception;
 	
 	//새로운 방 생성
-	int createRoom(HttpSession session, VideoCall vc) throws Exception;
+	int createRoom(HttpSession session, Model model, VideoCall vc) throws Exception;
 	
 	//openvidu 토큰 생성
 	Map<String, Object> createToken(HttpSession session, String sessionId) throws Exception;

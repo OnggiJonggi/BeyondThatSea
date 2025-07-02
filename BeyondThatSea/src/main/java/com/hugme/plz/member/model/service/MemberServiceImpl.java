@@ -41,7 +41,7 @@ public class MemberServiceImpl implements MemberService{
 		m.setUserId(userId);
 		m.setUserPwd(userPwd);
 		m.setUserName(userName);
-		m.setNameSeed(Regexp.createUUID());
+		m.setNameSeed((byte[])Regexp.createUUID().get("uuidRaw"));
 		
 		int result = dao.enroll(sqlSession, m);
 		

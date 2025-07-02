@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
   <head>
-<th:block th:replace="~{/common/header :: head}"></th:block>
+  
+  <!-- 부트스트랩, lodash, jquery등등 각종 라이브러리가 선언된 조각 -->
+<th:block th:replace="~{/common/fragment :: library}"></th:block>
+
     <meta charset="UTF-8" />
     <title>영상통화</title>
   </head>
   <body>
-<th:block th:replace="~{/common/header :: header}"></th:block>
+<th:block th:replace="~{/common/fragment :: header}"></th:block>
 
     <h3>니가 받은 초대</h3>
     <div id="invitedRoom">
       <button type="button">새로고침</button>
-      <!--
-	초대받음 : session의 invitedRoom에 VideoCall객체를 받아오기
-	sse로 실시간?
-	-->
+      <!-- 작성하지 않음 -->
     </div>
 
-    <h3>새로운 방 생성</h3>
+    <h3>새로운 방 생성하기</h3>
     <form id="createRoomForm" th:action="@{/videoCall/createRoom}" method="get">
       <div>
         <label for="vcName"><b>방 이름</b></label
@@ -46,11 +46,39 @@
 
     <hr />
 
-    <h3>기존 방 활성화</h3>
+    <h3>내가 생성한 방 들어가기</h3>
     <!--
-	session의 myVcRoom에 List<VideoCall>로 담김
-	myVcRoom.vcId를 videoCall/recallRoom로 보냄
-	-->
+      model의 myVcRoom에 List<VideoCall>로 담김
+      videoCall 객체 : 
+      public class VideoCall {
+			private byte[] vcId;
+			private String userNo; //방장 회원번호
+			private String vcName;
+			private Timestamp createTimestamp;
+			private int maxParticipants;
+			private String status;
+			
+			//방장 이름과 시드
+			private String userName; //member
+			private byte[] nameSeed; //member
+			
+		}
+	해당 객체 리스트로부터 카드 생성. 양식은 아래 참조
+	userName을 맨 앞에 작성하고, vcId를 그 뒤에 샾(#)을 붙여 표시함
+	그 밑에는 생성 날짜 : createTimestamp, 최대 인원 : maxParticipants,
+	status('Y'이면 방송중, 'N'이면 아무런 표시하지 않음) 표시
+	
+	카드영역 우측 하단에는 '참여하기', '초대하기', '삭제하기' 버튼을 둠.
+	버튼은 셋 모두 적절한 부트스트랩 아이콘으로 나타내기
+	'참여하기'버튼을 누르고 확인 모달을 거치면, vcId를 가지고 @{/videoCall/recallRoom} 으로 POST 비동기 요청
+	'초대하기'버튼을 누르면 vcId를 가지고 @{/videoCall/inviteUser} 으로 GET 요청
+	'삭제하기'버튼을 누르고 확인 모달을 거치면, vcId를 가지고 @{/videoCall/deleteRoom} 으로 POST 비동기 요청
+	
+	'참여하기', '삭제하기'버튼의 응답은 'success'와 'fail'이며, 각각 성공과 실패를 뜻함. 
+	
+    -->
+
+    <hr />
 
     <h3>다른 방 참여하기</h3>
     <div id="invitedRoom">
@@ -154,12 +182,12 @@
           };
 
           $.ajax({
-            url: /*[[@{/videoCall/createRoom}]]*/ '새로운 방 만들기',
+            url: /*[[@{/videoCall/createRoom}]]*/ "새로운 방 만들기",
             method: "POST",
             data: formData,
-            success: function (res) {
-              if (res.result === "success") {
-                createRoomArea(res);
+            success: function (data) {
+              if (data == "success") {
+                createRoomArea();
               } else {
                 alert("방 생성에 실패했습니다.");
               }
@@ -171,12 +199,11 @@
         });
 
         //생성된 방 정보 동적 생성
-        function createRoomArea(data) {
-          let userName = data.vcRoom.nameSeed;
-          let vcName = data.vcRoom.vcId;
-          let createTimestamp = new Date(
-            data.vcRoom.createTimestamp
-          ).toLocaleString();
+        function createRoomArea() {
+          let userName = '${loginUser.userName}';
+          let vcName = '${createdVcRoom.vcId}';
+          let createTimestamp = new Date('${createdVcRoom.createTimestamp}')
+          	.toLocaleString();
           let vcRoomUrl = data.vcRoomUrl;
 
           // 동적으로 영역 생성
@@ -184,7 +211,7 @@
             <div class="card mt-3" id="createdRoomCard">
               <div class="card-body">
                 <h5 class="card-title">${userName} 님의 방 - ${vcName} (${createTimestamp})</h5>
-                <a href="${vcRoomUrl}" target="_blank" class="btn btn-primary">참여하기</a>
+                <a href="${createdVcRoomUrl}" target="_blank" class="btn btn-primary">참여하기</a>
               </div>
             </div>
           `;

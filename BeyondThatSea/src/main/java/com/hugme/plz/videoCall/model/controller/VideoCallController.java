@@ -47,17 +47,17 @@ public class VideoCallController {
 	@PostMapping("/createRoom")
 	public String createRoom(HttpSession session, Model model, VideoCall vc) {
 		try {
-			int result = service.createRoom(session,vc);
+			int result = service.createRoom(session,model,vc);
 			if(result>0) {
-				return "redirect:/videoCall/room";
+				return "success";
 			}else {
 				throw new Exception();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			session.setAttribute("alertMsg", "500 err");
-			return "common/errorPage";
-		} 
+			return "fail";
+		}
 	}
 	
 	//기존 자신의 방 활성화

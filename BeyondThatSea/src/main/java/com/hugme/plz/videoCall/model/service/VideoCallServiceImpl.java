@@ -1,7 +1,6 @@
 package com.hugme.plz.videoCall.model.service;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -11,9 +10,9 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
 
 import com.hugme.plz.common.Regexp;
-import com.hugme.plz.config.VideoCallConfig;
 import com.hugme.plz.member.model.vo.Member;
 import com.hugme.plz.videoCall.model.dao.VideoCallDao;
 import com.hugme.plz.videoCall.model.vo.VcMember;
@@ -27,8 +26,6 @@ import jakarta.servlet.http.HttpSession;
 public class VideoCallServiceImpl implements VideoCallService{
 	@Autowired
 	private SqlSessionTemplate sqlSession;
-    @Autowired
-    private VideoCallConfig vcConfig;
     @Autowired
     private DailyService dailyService;
     
@@ -65,7 +62,7 @@ public class VideoCallServiceImpl implements VideoCallService{
 	//새로운 방 생성
 	@Override
 	@Transactional
-	public int createRoom(HttpSession session, VideoCall vc) throws Exception{
+	public int createRoom(HttpSession session, Model model, VideoCall vc) throws Exception{
 		
 		Member m = (Member)session.getAttribute("loginUser");
 		
@@ -77,17 +74,28 @@ public class VideoCallServiceImpl implements VideoCallService{
 				|| dao.countMyVcRoom(sqlSession,m)>5) return 0;
 		
 		vc.setUserNo(m.getUserNo());
-		byte[] vcId = Regexp.createUUID();
+		
+		//uuid생성하기
+		Map<String, Object> createdUuid = Regexp.createUUID();
+		
+		//byte[]형식 uuid를 DB에 저장
+		byte[] vcId = (byte[])createdUuid.get("uuidRaw");
 		vc.setVcId(vcId);
-		vc.setCreateTimestamp(new Timestamp(System.currentTimeMillis()));
+		
+		//문자열(하이픈 포함) uuid를 daily.co로 보내기
+		String uuidStr = (String)createdUuid.get("uuid");
 		
 		// 관리자용 토큰 생성
-		String ownerToken = dailyService.createMeetingToken(vcId, m, "owner").block();
+		String ownerToken = dailyService.createMeetingToken(uuidStr, m, "owner").block();
 		if(ownerToken==null) return 0;
 		
-		//daily.co에 방 생성
-        String createdRoom = dailyService.createRoom(vcId, ownerToken);
+		//daily.co에 방 생성(방 url)
+        String createdRoom = dailyService.createRoom(uuidStr, vc);
         if(createdRoom==null) return 0;
+        
+        //방 url과 토큰을 합치기
+        String accessUrl = createdRoom + "?t=" + ownerToken;
+        System.out.println("새로운 방이 생성되었어요! : " + accessUrl);
         
 		//데이터 모음집 넣기
 		vc.setUserName(m.getUserName());
@@ -100,13 +108,13 @@ public class VideoCallServiceImpl implements VideoCallService{
 					.vcId(vcId)
 					.userNo(m.getUserNo())
 					.status("Y")
-					.roleType("M")
+					.roleType("O")
 					.build();
-			result = dao.insertOwner(sqlSession,vcm);
+			result = dao.insertVcMember(sqlSession,vcm);
 			
-			//세션에 해당 방 정보 저장
-			session.setAttribute("vcRoomUrl", createdRoom);
-			session.setAttribute("vcRoom", vc);
+			//모달에 해당 방 정보 저장
+			model.addAttribute("createdVcRoomUrl", accessUrl);
+			model.addAttribute("createdVcRoom", vc);
 		}
 		
 		return result;

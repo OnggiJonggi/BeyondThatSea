@@ -25,19 +25,21 @@ public class ControllerAdvise {
 		}
 	}
 	
-	@ModelAttribute("vcRoomUrl")
-	public String addVcRoomUrl(HttpSession session) {
-		if(session.getAttribute("vcRoomUrl") != null) {
-			return (String) session.getAttribute("vcRoomUrl");
+	
+	@ModelAttribute("myVcRoom")
+	public String addMyVcRoom(HttpSession session) {
+		if(session.getAttribute("myVcRoom") != null) {
+			return (String) session.getAttribute("myVcRoom");
 		} else {
 			return null;
 		}
 	}
 	
-	@ModelAttribute("vcToken")
-	public String addVcToken(HttpSession session) {
-		if(session.getAttribute("vcToken") != null) {
-			return (String) session.getAttribute("vcToken");
+	
+	@ModelAttribute("invitedRoom")
+	public String addInvitedRoom(HttpSession session) {
+		if(session.getAttribute("invitedRoom") != null) {
+			return (String) session.getAttribute("invitedRoom");
 		} else {
 			return null;
 		}
