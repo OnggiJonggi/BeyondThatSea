@@ -7,13 +7,13 @@ import jakarta.servlet.http.HttpSession;
 public interface MemberService {
 
 	//회원가입
-	int enroll(Member m);
+	int enroll(Member m) throws Exception;
 	
 	//비동기 - 아이디 체크
-	String checkUserId(String userId);
+	String checkUserId(String userId) throws Exception;
 
 	//로그인
-	int login(HttpSession session, Member m);
+	int login(HttpSession session, Member m) throws Exception;
 
 	
 }

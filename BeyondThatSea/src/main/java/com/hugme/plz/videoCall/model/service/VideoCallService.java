@@ -19,9 +19,6 @@ public interface VideoCallService {
 	//새로운 방 생성
 	int createRoom(HttpSession session, Model model, VideoCall vc) throws Exception;
 	
-	//openvidu 토큰 생성
-	Map<String, Object> createToken(HttpSession session, String sessionId) throws Exception;
-
 	//기존 자신의 방 활성화
 	int recallRoom(HttpSession session, VideoCall vc) throws Exception;
 	

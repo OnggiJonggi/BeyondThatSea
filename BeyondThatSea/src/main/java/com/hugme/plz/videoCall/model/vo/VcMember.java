@@ -15,4 +15,6 @@ public class VcMember {
 	private String userNo;
 	private String status; //상태(Y:접속, N:미접속, U:수락 대기중)
 	private String roleType; //관리 권한(O:생성자, A:관리자, S:관전자)
+	
+	private String vcIdStr;
 }

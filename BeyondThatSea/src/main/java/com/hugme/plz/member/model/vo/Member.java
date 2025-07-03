@@ -18,4 +18,10 @@ public class Member {
 	private Timestamp enrollDate;
 	private Timestamp modiofyDate;
 	private String status;
+	
+	/*
+	 * 프론트에서는 nameSeedStr(하이픈 포함 문자열) 사용
+	 * 백엔드에서 nameSeed(하이픈 미포함 바이트 배열) 사용
+	 */
+	private String nameSeedStr;
 }

@@ -217,14 +217,14 @@
           }
         });
 
-      let toggolePassed = false;
+      let togglePass = false;
       function toggleSubmit() {
         if (idPass && pwdPass && namePass) {
           setButtonState("active");
-          toggolePassed = true;
-        } else if (toggolePassed == true) {
+          togglePass = true;
+        } else if (togglePass == true) {
           setButtonState("disabled");
-          toggolePassed = false;
+          togglePass = false;
         }
       }
 

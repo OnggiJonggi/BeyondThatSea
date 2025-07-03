@@ -1,14 +1,16 @@
 package com.hugme.plz.member.model.service;
 
-import com.hugme.plz.common.Regexp;
-import com.hugme.plz.member.model.dao.MemberDao;
-import com.hugme.plz.member.model.vo.Member;
-import jakarta.servlet.http.HttpSession;
-
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.hugme.plz.common.Regexp;
+import com.hugme.plz.common.UuidUtil;
+import com.hugme.plz.member.model.dao.MemberDao;
+import com.hugme.plz.member.model.vo.Member;
+
+import jakarta.servlet.http.HttpSession;
 
 @Service
 public class MemberServiceImpl implements MemberService{
@@ -22,7 +24,7 @@ public class MemberServiceImpl implements MemberService{
 
 	//회원가입
 	@Override
-	public int enroll(Member m) {
+	public int enroll(Member m) throws Exception{
 		String userId = m.getUserId().trim();
 		String userPwd = m.getUserPwd().trim();
 		String userName = m.getUserName().trim();
@@ -41,7 +43,7 @@ public class MemberServiceImpl implements MemberService{
 		m.setUserId(userId);
 		m.setUserPwd(userPwd);
 		m.setUserName(userName);
-		m.setNameSeed((byte[])Regexp.createUUID().get("uuidRaw"));
+		m.setNameSeed((byte[])UuidUtil.createUUID().get("uuidRaw"));
 		
 		int result = dao.enroll(sqlSession, m);
 		
@@ -54,7 +56,7 @@ public class MemberServiceImpl implements MemberService{
 	
 	//비동기 - 아이디 체크
 	@Override
-	public String checkUserId(String userId) {
+	public String checkUserId(String userId) throws Exception{
 		if(!userId.matches(Regexp.USERID)) {
 			return "noPass";
 		}else if(dao.checkUserId(sqlSession, userId)==0){
@@ -66,7 +68,7 @@ public class MemberServiceImpl implements MemberService{
 	
 	//로그인
 	@Override
-	public int login(HttpSession session, Member m) {
+	public int login(HttpSession session, Member m) throws Exception{
 		String userId = m.getUserId().trim();
 		String userPwd = m.getUserPwd().trim();
 		
@@ -80,6 +82,7 @@ public class MemberServiceImpl implements MemberService{
 		if(!bcrypt.matches(userPwd, loginUser.getUserPwd())) return 0;
 		
 		session.setAttribute("loginUser", loginUser);
+		loginUser.setNameSeedStr(UuidUtil.byteArrToStr(loginUser.getNameSeed()));
 		return 1;
 	}
 }

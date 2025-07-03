@@ -121,7 +121,6 @@ public class VideoCallController {
 			,HttpSession session) {
 		Map<String, Object> result = null;
 	    try {
-	    	result = service.createToken(session, sessionId);
 	        return result;
 	    } catch (Exception e) {
 	        e.printStackTrace();

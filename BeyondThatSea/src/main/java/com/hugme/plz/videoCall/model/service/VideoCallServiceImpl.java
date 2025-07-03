@@ -12,8 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-
+import com.hugme.plz.common.ControllerAdvise;
 import com.hugme.plz.common.Regexp;
+import com.hugme.plz.common.UuidUtil;
 import com.hugme.plz.member.model.vo.Member;
 import com.hugme.plz.videoCall.model.dao.VideoCallDao;
 import com.hugme.plz.videoCall.model.vo.VcMember;
@@ -22,9 +23,10 @@ import com.hugme.plz.videoCall.model.vo.VideoCall;
 import jakarta.servlet.http.HttpSession;
 
 
-
 @Service
 public class VideoCallServiceImpl implements VideoCallService{
+
+    private final ControllerAdvise controllerAdvise;
 	@Autowired
 	private SqlSessionTemplate sqlSession;
     @Autowired
@@ -32,6 +34,11 @@ public class VideoCallServiceImpl implements VideoCallService{
     
 	@Autowired
 	private VideoCallDao dao;
+
+
+    VideoCallServiceImpl(ControllerAdvise controllerAdvise) {
+        this.controllerAdvise = controllerAdvise;
+    }
 	
 	
 	//페이지 접근시 자신의 방 리스트를 보여준다.
@@ -40,11 +47,17 @@ public class VideoCallServiceImpl implements VideoCallService{
 		Member m = (Member)session.getAttribute("loginUser");
 		List<VideoCall> list = dao.myRoomList(sqlSession, m);
 		
-		//방 리스트에 이름/시드 넣기
 		for(VideoCall vc : list) {
+			//방 리스트에 이름/시드 넣기
 			vc.setUserName(m.getUserName());
 			vc.setNameSeed(m.getNameSeed());
+			
+			//UUID byte[] -> String(하이픈 포함)
+			vc.setVcIdStr(UuidUtil.byteArrToStr(vc.getVcId()));
 		}
+		
+		System.out.println("자신이 생성한 방 : "+list);
+		
 		
 		//세션에 퐁당
 		session.setAttribute("myVcRoom", list);
@@ -56,8 +69,6 @@ public class VideoCallServiceImpl implements VideoCallService{
 		Member m = (Member)session.getAttribute("loginUser");
 		List<VideoCall> list = dao.myInvitedRoomList(sqlSession, m);
 		
-		
-		
 		List<VideoCall> invitedRoom =new ArrayList<>();
 		List<VideoCall> allowedRoom =new ArrayList<>();
 		for(VideoCall vc : list ) {
@@ -68,7 +79,10 @@ public class VideoCallServiceImpl implements VideoCallService{
 				//관리 권한이 있으면 초대 수락한 방
 				allowedRoom.add(vc);
 			}
+			//UUID byte[] -> String(하이픈 포함)
+			vc.setVcIdStr(UuidUtil.byteArrToStr(vc.getVcId()));
 		}
+		System.out.println("자신이 초대받은 : "+list);
 		
 		//아직 초대 수락하지 않은 방
 		model.addAttribute("invitedRoom", invitedRoom);
@@ -96,7 +110,7 @@ public class VideoCallServiceImpl implements VideoCallService{
 		vc.setUserNo(m.getUserNo());
 		
 		//uuid생성하기
-		Map<String, Object> createdUuid = Regexp.createUUID();
+		Map<String, Object> createdUuid = UuidUtil.createUUID();
 		
 		//byte[]형식 uuid를 DB에 저장
 		byte[] vcId = (byte[])createdUuid.get("uuidRaw");
@@ -135,6 +149,9 @@ public class VideoCallServiceImpl implements VideoCallService{
 			//모달에 해당 방 정보 저장
 			model.addAttribute("createdVcRoomUrl", accessUrl);
 			model.addAttribute("createdVcRoom", vc);
+			
+			//방 목록 재조회
+			myRoomList(session);
 		}
 		
 		return result;
@@ -144,15 +161,18 @@ public class VideoCallServiceImpl implements VideoCallService{
 	@Transactional
 	@Override
 	public int recallRoom(HttpSession session, VideoCall vc) throws Exception{
-		
 		Member m = (Member)session.getAttribute("loginUser");
+		
+		//vcIdstr을 vcId로 바꿔요.
+		vc.setVcId(UuidUtil.strToByteArr(vc.getVcIdStr()));
 		
 		//먼저 유효성 확인 - 해당하는 방이 존재하는지 함 봅시다.
 		List<VideoCall> list = (List<VideoCall>)session.getAttribute("myVcRoom");
 		if(list==null || list.isEmpty()) return 0;
+		
+		//vcId로 방에 들어갈 거에요.
 		boolean flag = false;
 		for(VideoCall vcFor : list) {
-			//vcId로 방에 들어갈 거에요.
 			if(Arrays.equals(vcFor.getVcId(), vc.getVcId())) {
 				vc = vcFor;
 				flag = true;
@@ -161,7 +181,7 @@ public class VideoCallServiceImpl implements VideoCallService{
 		}
 		if(!flag) return 0;
 
-		//openvidu세션 생성
+		//
 		
 		//db에 저장하지 않는 프론트용 데이터
 		vc.setUserName(m.getUserName());
@@ -252,53 +272,4 @@ public class VideoCallServiceImpl implements VideoCallService{
 		return result;
 	}
 	
-	//openvidu토큰 생성
-	@Override
-	public Map<String, Object> createToken(HttpSession session, String sessionId) throws Exception {
-    	Map<String, Object> result = new HashMap<>();
-
-        //openvidu 세션 조회
-//        Session vcSession = openvidu.getActiveSession(sessionId);
-//        if (vcSession == null) {
-//            result.put("error", "세션이 존재하지 않습니다.");
-//            return result;
-//        }
-        
-        //여기 들어올 자격이 있는가?
-        Member m = (Member)session.getAttribute("loginUser");
-        VideoCall vc = (VideoCall)session.getAttribute("videoCallRoom");
-		VcMember vcm = VcMember.builder()
-				.vcId(vc.getVcId())
-				.userNo(m.getUserNo())
-				.build();
-        String roleType = dao.haveLicense(sqlSession,vcm);
-
-        
-        //아니 이 새끼 DB에 없잖아. 너 잘 걸렸다 심심했는데
-        if(roleType==null) {
-        	result.put("error", "잘못된 접근입니다.");
-    		return result;
-    	}
-        
-        //roleType에 따른 openvidu권한 설정
-//        OpenViduRole role;
-//        switch(roleType) {
-//        case "M": role = OpenViduRole.MODERATOR; break;
-//        case "P": role = OpenViduRole.PUBLISHER; break;
-//        case "S":
-//        default : role = OpenViduRole.SUBSCRIBER;
-//        }
-//
-//        //토큰 생성
-//        ConnectionProperties props = new ConnectionProperties.Builder()
-//                .type(ConnectionType.WEBRTC)
-//                .role(role)
-//                .data(m.getUserName()+":"+m.getNameSeed()) //data추출할 때는 뒤에서부터 : 찾기
-//                .build();
-//        Connection connection = vcSession.createConnection(props);
-
-//        result.put("token", connection.getToken());
-        
-        return result;
-	}
 }

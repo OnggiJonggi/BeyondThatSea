@@ -49,12 +49,13 @@
 			,vc.STATUS
 			,m.USER_NAME
 			,m.NAME_SEED
-			,vcm.roleType
+			,vcm.ROLE_TYPE
 		from VIDEO_CALL vc
 		left join MEMBER m on(vc.USER_NO = m.USER_NO)
 		left join VC_MEMBER vcm on(vc.VC_ID = vcm.VC_ID)
 		where vcm.USER_NO = #{userNo}
 		and vc.STATUS !='D'
+		and vcm.ROLE_TYPE != 'O'
 	</select>
 	
 	<insert id="insertVcMember" parameterType="VcMember">
