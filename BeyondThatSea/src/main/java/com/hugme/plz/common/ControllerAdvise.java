@@ -1,12 +1,7 @@
 package com.hugme.plz.common;
 
-import java.util.List;
-
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
-
-import com.hugme.plz.member.model.vo.Member;
-import com.hugme.plz.videoCall.model.vo.VideoCall;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -19,22 +14,12 @@ public class ControllerAdvise {
 	//아래와 같이 세션에 담긴 데이터를 모델에 담아 보내면
 	//view에서 ${키값}으로 접근가능
 	@ModelAttribute("loginUser") //이 메소드가 반환하는 값을 "loginUser"라는 이름으로 model에 추가함
-	public Member addLoginUser(HttpSession session) {
+	public Void addLoginUser(HttpSession session) {
 		//session에 loginUser가 있는지 판별 수 리턴
 		if(session.getAttribute("loginUser") != null) {
-			return (Member) session.getAttribute("loginUser");
+			return null;
 		} else {
 			return null;
 		}
 	}
-	
-	@ModelAttribute("myVcRoom")
-	public List<VideoCall> addMyVcRoom(HttpSession session) {
-		if(session.getAttribute("myVcRoom") != null) {
-			return ((List<VideoCall>)session.getAttribute("myVcRoom"));
-		} else {
-			return null;
-		}
-	}
-	
 }

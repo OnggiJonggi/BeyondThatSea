@@ -5,12 +5,3 @@
 <link th:href="@{/webjars/bootstrap/5.3.7/css/bootstrap.min.css}" rel="stylesheet" />
 <link th:href="@{/webjars/bootstrap-icons/1.13.1/font/bootstrap-icons.css}" rel="stylesheet" />
 </th:block>
-
-<th:block th:fragment="header">
-  <script th:inline="javascript">
-    let msg = /*[[${alertMsg}]]*/ "";
-    if (msg != null && msg != "") {
-      alert(msg);
-    }
-  </script>
-</th:block>
