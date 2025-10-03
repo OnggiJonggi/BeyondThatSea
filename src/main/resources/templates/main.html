@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>저 바다 너머</title>
+</head>
+<body>
+<th:block th:replace="~{/common/alert-message :: alertMsg}"></th:block>
+
+<hr>
+<hr>
+<hr>
+<div>
+	<!-- 로그인한 사용자 -->
+	<div th:if="${session.loginUser}">
+		<span th:text="${session.loginUser.name} + '님 환영합니다!'"></span>
+		<a th:href="@{/member/logout}">로그아웃</a>
+		<a th:href="@{/room/myroom}">내방으로</a>
+	</div>
+	
+	<!-- 비로그인 사용자 -->
+	<div th:unless="${session.loginUser}">
+		<a th:href="@{/member/login}">로그인</a>
+		<a th:href="@{/member/signup}">회원가입</a>
+	</div>
+</div>
+<hr>
+
+</body>
+</html>
