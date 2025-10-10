@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class Signup {
+public class FriendOut {
 	private String id;
-	private String pwd;
 }

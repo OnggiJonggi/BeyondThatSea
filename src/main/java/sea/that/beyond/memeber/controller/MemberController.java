@@ -9,14 +9,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import jakarta.servlet.http.HttpSession;
 import sea.that.beyond.memeber.model.service.MemberService;
-import sea.that.beyond.memeber.model.vo.Signup;
+import sea.that.beyond.memeber.model.vo.UserIn;
+import sea.that.beyond.memeber.model.vo.UserOut;
 
 @Controller
 @RequestMapping("/member")
 public class MemberController {
 	@Autowired
 	private MemberService service; 
-	
+		
 	@ResponseBody
 	@GetMapping("/signup")
 	public String goSignup() {
@@ -25,7 +26,7 @@ public class MemberController {
 
 	@ResponseBody
 	@PostMapping("/signup")
-	public String signup(HttpSession session, Signup signup) {
+	public String signup(HttpSession session, UserIn signup) {
 		try {
 			service.signup(signup);
 		} catch (Exception e) {
@@ -43,9 +44,9 @@ public class MemberController {
 	
 	@ResponseBody
 	@PostMapping("/login")
-	public String login(HttpSession session, Signup signup) {
+	public String login(HttpSession session, UserOut userOut) {
 		try {
-			service.login(session, signup);
+			service.login(session, userOut);
 		} catch (Exception e) {
 			e.printStackTrace();
 			session.setAttribute("alertMsg", "로그인 실패!");

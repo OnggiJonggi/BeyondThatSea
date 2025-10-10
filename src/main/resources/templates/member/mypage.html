@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 방 - 저 바다 너머</title>
+</head>
+<body>
+<th:block th:replace="~{/common/alert-message :: alertMsg}"></th:block>
+
+<!--
+	session에 rootContextPath라는 이름으로 context-path가 담겨 있음
+	세션에서 해당 값을 추출해 상수로 사용하기
+	
+	이 페이지는 크게 좌/우 블록으로 나뉨 
+	좌 : 친구 목록
+	우 : 채팅방 목록
+	
+	-----
+	친구 목록
+	페이지가 로딩되면 context-path/friend/myFriendList 로 post요청
+	상태값이 200이면 List<String>형식으로 데이터가 담겨 옮.
+	각 친구를 동적 생성된 개별 영역에 표시. 각 영역에는 '삭제' 버튼/'쪽지'버튼 동적 생성.
+	삭제 버튼을 누르면 해당 문자열을 name=friendId 파라미터에 담아 context-path/friend/delete로 post요청, 요청 후 친구 목록 재요청
+	상태값이 200이 아니라면 '친구 목록을 불러올 수 없습니다' 표신
+	쪽지 버튼을 누르면 context-path/room/dm으로 페이지 이동
+	
+	친구 목록 영역 맨 위에는 input영역(name=firendId)과 '친구 추가'버튼
+	해당 버튼을 누르면 context-path/friend/insert로 post 요청 및 친구 목록 재요청
+	delete와 insert는 별도의 응답 상태 처리 없음
+	
+	
+	------
+	채팅방 목록
+	페이지가 로딩되면 context-path/room/myRoomList로 post요청
+-->
+
+
+</body>
+</html>

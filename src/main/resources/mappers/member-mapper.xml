@@ -5,12 +5,12 @@
 
 <mapper namespace="memberMapper">
 
-<insert id="insertMember" parameterType="Signup">
+<insert id="insertMember" parameterType="userIn">
 	insert into MEMBER(user_no, user_id, password)
 	values(SEQ_MEMBER.nextval, #{id}, #{pwd})
 </insert>
 
-<select id="selectMember" parameterType="Signup" resultType="int">
+<select id="selectMember" parameterType="UserOut" resultType="int">
 	select count(*) from MEMBER
 	where user_id = #{id} and password = #{pwd}
 </select>

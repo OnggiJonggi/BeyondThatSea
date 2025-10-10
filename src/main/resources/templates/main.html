@@ -16,7 +16,7 @@
 	<div th:if="${session.loginUser}">
 		<span th:text="${session.loginUser.name} + '님 환영합니다!'"></span>
 		<a th:href="@{/member/logout}">로그아웃</a>
-		<a th:href="@{/room/myroom}">내방으로</a>
+		<a th:href="@{/member/mypage}">마이페이지</a>
 	</div>
 	
 	<!-- 비로그인 사용자 -->
